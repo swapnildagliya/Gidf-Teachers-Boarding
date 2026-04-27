@@ -1,0 +1,2052 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#FFFFFF" />
+<!-- Tell search engines not to index. The page contains teacher logistics
+     embedded in JS; keep it un-discoverable except by direct share. -->
+<meta name="robots" content="noindex,nofollow,noarchive" />
+<meta name="googlebot" content="noindex,nofollow,noarchive" />
+<title>Faculty Pass · GIDF 2026 · Shoonya</title>
+<meta name="description" content="A multi-phase arrival journey for the visiting faculty of the Gent India Dans Festival 2026." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Noto+Serif+Devanagari:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="preload" as="image" href="./shoonya-facade.jpg">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/framer-motion@10.18.0/dist/framer-motion.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<style>
+  html, body { margin: 0; background: #fff; }
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    color: #4A4A4A;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+  ::selection { background: #E85D1F; color: #fff; }
+  *:focus-visible { outline: 1px solid #E85D1F; outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel" data-presets="env,react">
+const { useState, useEffect, useMemo, Fragment } = React;
+const { motion, AnimatePresence, useReducedMotion } = window.Motion;
+
+/* ============================================================
+   1. TEACHER REGISTRY — 5 visiting faculty for GIDF 2026
+   Sourced from /gidf-teachers/index.html, /Emails/Teachers' email *.docx,
+   and the Sunday workshop schedule on gidf.abcdans.com.
+   ============================================================ */
+const TEACHERS = [
+  {
+    id: "colleena", name: "Colleena", fullName: "Colleena Shakti",
+    originCity: "Jaipur", originCountry: "India", originCode: "IN",
+    airportCode: "JAI",
+    stay: "adagio",
+    galaAct: 15, galaSlot: "19:20", galaStyle: "Solo",
+    drive: "https://drive.google.com/drive/folders/1DQFfdGCWfaJW_V6osGKMnfvw2GR9SGMk?usp=drive_link",
+  },
+  {
+    id: "vaishali", name: "Vaishali", fullName: "Vaishali Sagar",
+    originCity: "Amsterdam", originCountry: "Netherlands", originCode: "NL",
+    airportCode: "AMS",
+    stay: "adagio",
+    galaAct: 13, galaSlot: "19:00", galaStyle: "Folk · interactive",
+    drive: "https://drive.google.com/drive/folders/1C8vAC_rZ-FtoAlwJGp_sYDi38sWfZgT5?usp=drive_link",
+  },
+  {
+    id: "shampa", name: "Shampa", fullName: "Shampa Gopikrishna",
+    originCity: "Amsterdam", originCountry: "Netherlands", originCode: "NL",
+    airportCode: "AMS",
+    stay: "adagio",
+    galaAct: 11, galaSlot: "18:40", galaStyle: "Garba · solo",
+    drive: "https://drive.google.com/drive/folders/1_y5cXkDj6q_iqRPBCJETJ72Bp1_5hQxD?usp=drive_link",
+  },
+  {
+    id: "desihop", name: "Desihop", fullName: "Desihop",
+    originCity: "Frankfurt", originCountry: "Germany", originCode: "DE",
+    airportCode: "FRA",
+    stay: "dorm",
+    galaAct: 3, galaSlot: "17:20", galaStyle: "Afro · kuthu · hip-hop fusion · duet",
+    drive: "https://drive.google.com/drive/folders/1IUJtwczDdWl_xigG9sRtQFGzwV0hi5wZ?usp=drive_link",
+  },
+  {
+    id: "manasi", name: "Manasi", fullName: "Manasi Khanna",
+    originCity: "Amsterdam", originCountry: "Netherlands", originCode: "NL",
+    airportCode: "AMS",
+    stay: "dorm",
+    galaAct: 5, galaSlot: "17:40", galaStyle: "Bhangra & Giddha · group of 3",
+    drive: "https://drive.google.com/drive/folders/1kiTMBzPa84j6hyXypXeZ2xrv7MICk9Cf?usp=drive_link",
+  },
+];
+
+/* ============================================================
+   2. WORKSHOPS LIBRARY — verbatim from gidf.abcdans.com
+   `classMonitor` stays null until ABC members self-claim the slot
+   in the GIDF Smart Festival Tracker (FRI-005, FRI-006, SAT-004,
+   SAT-006, SAT-008, SAT-011, SUN-004, SUN-005, SUN-010).
+   Drop the name in here once claimed — the timeline auto-renders it.
+   ============================================================ */
+const W = {
+  techLab: {
+    id: "techLab", day: "Friday · 1 May", dayKey: "Fri",
+    time: "12:00 – 16:00", startMin: 720,
+    title: "Technique & Tools Lab",
+    subtitle: "Pushing the boundaries of Rajasthani folk",
+    teacher: "colleena", studio: "Studio Aakash", floor: "2nd Floor",
+    level: "Experienced dancers",
+    classMonitor: "Swapnil", // Swapnil monitors this himself; not in tracker
+    desc: "An exploration of Rajasthani dance techniques from various communities, finding their common ground and the self-expression that expands out from this centre. Choreographic tools to empower creative range — true to Rajasthani roots while building in the lived present.",
+    notice: "Eat before class. Bring a packed lunch or fruit — there's a short break in the middle, no full meal stop.",
+  },
+  bollyfolk: {
+    id: "bollyfolk", day: "Friday · 1 May", dayKey: "Fri",
+    time: "17:00 – 18:30", startMin: 1020,
+    title: "Bollywood folk fusion",
+    teacher: "vaishali", studio: "Studio Art Deco", floor: "1st Floor",
+    level: "Experienced dancers",
+    classMonitor: "Khushboo",
+    desc: "The infectious energy of Mumbai. A powerful, folk-inspired Bollywood routine that blends cinematic flair with authentic traditional groundedness.",
+  },
+  garba: {
+    id: "garba", day: "Friday · 1 May", dayKey: "Fri",
+    time: "18:30 – 20:00", startMin: 1110,
+    title: "Garba choreography",
+    teacher: "shampa", studio: "Studio Art Deco", floor: "1st Floor",
+    level: "Experience helpful",
+    classMonitor: "Khushboo",
+    desc: "The circular rhythm of Gujarat. A high-energy session focused on grace and stamina — a dynamic choreography that celebrates community, spirit and footwork.",
+  },
+  kuthu: {
+    id: "kuthu", day: "Saturday · 2 May", dayKey: "Sat",
+    time: "09:00 – 11:00", startMin: 540,
+    title: "Kuthu · the heartbeat of the streets",
+    teacher: "desihop", studio: "Studio Art Deco", floor: "1st Floor",
+    level: "Experience helpful",
+    classMonitor: "Kaushika",
+    desc: "The raw, unapologetic energy of Kuthu — the vibrant folk-street dance of Tamil Nadu. Explosive power and earthy footwork. Sweat, loud beats, pure unrefined joy.",
+  },
+  chhau: {
+    id: "chhau", day: "Saturday · 2 May", dayKey: "Sat",
+    time: "11:00 – 12:30", startMin: 660,
+    title: "The martial grace of Mayurbhanj Chhau",
+    teacher: "shampa", studio: "Studio Art Deco", floor: "1st Floor",
+    level: "Open to all",
+    classMonitor: "Roshni",
+    desc: "One of India's most striking martial art-dance forms. Originating from Odisha — stylised animal movements, sweeping leg extensions, powerful jumps. Fundamental Uli-Chali and the controlled strength of this mask-less, heroic style.",
+  },
+  giddha: {
+    id: "giddha", day: "Saturday · 2 May", dayKey: "Sat",
+    time: "13:30 – 15:00", startMin: 810,
+    title: "Giddha · the pulse of Punjab",
+    teacher: "manasi", studio: "Studio Ananta", floor: "Ground Floor",
+    level: "Open to all",
+    classMonitor: "Khushboo",
+    desc: "The golden fields of Punjab in Gent. The grace, playful storytelling, and rhythmic boliyan (couplets) of this traditional women's folk dance — a celebration of sisterhood.",
+  },
+  abhinaya: {
+    id: "abhinaya", day: "Saturday · 2 May", dayKey: "Sat",
+    time: "15:20 – 16:50", startMin: 920,
+    title: "Abhinaya · training expression for dance",
+    teacher: "colleena", studio: "Studio Ananta", floor: "Ground Floor",
+    level: "Open to all",
+    classMonitor: "Khushboo",
+    desc: "Indian dances stand out as expressive storytelling languages. From an Odissi classical perspective: methods of acting based on the Natya Shastra, plus physical exercises that target facial responsiveness and storytelling-body dynamics.",
+  },
+  fusion: {
+    id: "fusion", day: "Sunday · 3 May", dayKey: "Sun",
+    time: "09:30 – 11:00", startMin: 570,
+    title: "Indian fusion bellydance",
+    teacher: "colleena", studio: "Studio Ananta", floor: "Ground Floor",
+    level: "Experience helpful",
+    classMonitor: "Khushboo",
+    desc: "Bridges modern and folkloric Bellydance/Raqs Sharqi vocabulary with extensive postures and spins of North Indian classical and folk dance, intricacies of eyes, hands and facial expression. Both ancient and modern.",
+  },
+  desiAfro: {
+    id: "desiAfro", day: "Sunday · 3 May", dayKey: "Sun",
+    time: "11:00 – 12:30", startMin: 660,
+    title: "Desi-afro grooves · Mumbai to Lagos",
+    teacher: "desihop", studio: "Studio Ananta", floor: "Ground Floor",
+    level: "Open to all",
+    classMonitor: "Khushboo",
+    desc: "The high-vibration synergy where the rhythms of Africa meet the flavour of India. Body isolations, heavy bass-lines, and a whole lot of soul.",
+  },
+  cheraw: {
+    id: "cheraw", day: "Sunday · 3 May", dayKey: "Sun",
+    time: "15:50 – 17:20", startMin: 950,
+    title: "Bamboo beats · the rhythms of Cheraw",
+    teacher: "vaishali", studio: "Studio Ananta", floor: "Ground Floor",
+    level: "Open to all",
+    classMonitor: "Roshni",
+    desc: "Step over the bamboo with precision and grace. Cheraw — the bamboo dance of Mizoram — is a masterclass in timing and coordination, navigating the rhythmic clanging of bamboo poles.",
+  },
+};
+
+const OPENING_PARTY = {
+  id: "openingParty", isEvent: true,
+  day: "Friday · 1 May", dayKey: "Fri",
+  time: "21:00 onwards", startMin: 1260,
+  title: "Opening Party",
+  subtitle: "Live band · DJ · Studio Ananta lights up",
+  studio: "Studio Ananta", floor: "Ground Floor",
+  desc: "After the last workshop wraps and Swapnil's Kalbeliya community class lifts the room, the band takes over. Long skirts, bare feet, late nights. DJ takes us late.",
+};
+
+const GALA = {
+  id: "gala", isEvent: true,
+  day: "Saturday · 2 May", dayKey: "Sat",
+  time: "20:30", startMin: 1230,
+  title: "GIDF 2026 Gala Showcase",
+  subtitle: "18 acts · one stage · ~90 minutes",
+  studio: "Shoonya Theatre · Studio Art Deco", floor: "1st Floor",
+  desc: "Doors open 20:00. All performers at stations 20:15. The Gala begins at 20:30 sharp.",
+};
+
+const TECH_REHEARSAL_BLOCK = {
+  id: "tech", isEvent: true,
+  day: "Saturday · 2 May", dayKey: "Sat",
+  startMin: 1020, // 17:00 — first tech slot
+  title: "Tech rehearsals",
+  subtitle: "10 minutes per act · be backstage 5 min before your slot",
+  studio: "Studio Art Deco · Stage", floor: "1st Floor",
+  desc: "Tech crew setup begins 16:00. Each act gets 10 minutes on stage for sound + light cues.",
+};
+
+const CLOSING_DINNER = {
+  id: "closingDinner", isEvent: true,
+  day: "Sunday · 3 May", dayKey: "Sun",
+  time: "~19:30", startMin: 1170,
+  title: "Closing dinner at Wim & Swapnil's",
+  subtitle: "After One Last Gupshup at 18:00",
+  studio: "Address shared in person", floor: "",
+  desc: "We always close the festival with a celebratory dinner at Swapnil & Wim's. Even though everyone will be exhausted, we go out with high energy.",
+};
+
+/* ============================================================
+   3. PER-TEACHER ITINERARY COMPOSITION
+   Orange = own session · Plain = festival event everyone attends
+   ============================================================ */
+function workshopsByTeacher(tid) {
+  return Object.values(W).filter(w => w.teacher === tid);
+}
+
+function parseTimeToMin(s) {
+  // "19:50" → 1190 ; safe for minute-of-day sort
+  const m = /^(\d{1,2}):(\d{2})/.exec(s);
+  if (!m) return 0;
+  return Number(m[1]) * 60 + Number(m[2]);
+}
+
+function computeTeacherItinerary(teacher) {
+  const own = workshopsByTeacher(teacher.id).map(w => ({ ...w, isOwn: true }));
+  const items = [...own];
+
+  // Friday Opening Party — all teachers
+  items.push({ ...OPENING_PARTY });
+
+  // Saturday — own tech rehearsal slot, then Grand Finale tech (all teachers
+  // present), then Gala. Grand Finale tech runs at 19:50 from gidf-teachers.
+  items.push({
+    ...TECH_REHEARSAL_BLOCK,
+    time: teacher.galaSlot,
+    title: `Your tech rehearsal — Act ${teacher.galaAct}`,
+    isPersonal: true,
+    startMin: parseTimeToMin(teacher.galaSlot),
+    desc: `${TECH_REHEARSAL_BLOCK.desc} Your slot: ${teacher.galaSlot}.`,
+  });
+  items.push({
+    id: "techFinale", isEvent: true,
+    day: "Saturday · 2 May", dayKey: "Sat",
+    time: "19:50", startMin: 1190,
+    title: "Grand Finale tech rehearsal",
+    subtitle: "All visiting teachers on stage together",
+    studio: "Studio Art Deco · Stage", floor: "1st Floor",
+    desc: "Act 18 — every visiting teacher joins the Grand Finale rehearsal slot. Be on stage at 19:50 sharp.",
+    isPersonal: true,
+  });
+  items.push({
+    ...GALA,
+    title: `${GALA.title} — you go on at Act ${teacher.galaAct}`,
+    isPersonal: true,
+    galaAct: teacher.galaAct, galaStyle: teacher.galaStyle,
+  });
+
+  // Sunday closing dinner — all teachers welcome (those who can stay)
+  items.push({ ...CLOSING_DINNER });
+
+  // Sort chronologically across days
+  items.sort((a, b) => {
+    const dayRank = { "Fri": 0, "Sat": 1, "Sun": 2 };
+    if (dayRank[a.dayKey] !== dayRank[b.dayKey]) return dayRank[a.dayKey] - dayRank[b.dayKey];
+    return a.startMin - b.startMin;
+  });
+
+  return items;
+}
+
+/* ============================================================
+   4. STAY DETAILS — verbatim from /Emails/Teachers' email *.docx
+   ============================================================ */
+const STAY = {
+  adagio: {
+    name: "Adagio Access Gent Centrum Dampoort",
+    addrLine1: "Koopvaardijlaan 29",
+    addrLine2: "9000 Gent",
+    walk: "10-min walk from Shoonya",
+    detail: "We'll help you with all the necessary information for your check-in.",
+  },
+  dorm: {
+    name: "Shoonya Dance Centre · studio dorm",
+    addrLine1: "Stapelplein 41",
+    addrLine2: "9000 Gent",
+    walk: "Right at the heart of the festivities",
+    detail: "The studio dorm is fully equipped with a kitchenette and a shower. All meal breaks are also planned in the dorm itself. Please bring a towel.",
+  },
+};
+
+/* ============================================================
+   5. PASS RIBBON — Faculty (black + gold)
+   Distinct from participant ribbons (orange/blue/pink/green/slate/black).
+   ============================================================ */
+const FACULTY_RIBBON = { color: "#0A0A0A", labelColor: "#E0B441", label: "Faculty" };
+
+/* ============================================================
+   6. MOTION TOKENS
+   ============================================================ */
+const EASE = [0.22, 0.61, 0.36, 1];
+const fadeUp = (delay = 0, distance = 14) => ({
+  initial: { opacity: 0, y: distance },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.8, delay, ease: EASE } },
+  exit:    { opacity: 0, y: -distance, transition: { duration: 0.4, ease: EASE } },
+});
+
+/* ============================================================
+   7. INLINE ICONS
+   ============================================================ */
+const ArrowRight = ({ className, style }) => (
+  <svg className={className} style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>
+  </svg>
+);
+const SpinIcon = ({ className, style }) => (
+  <svg className={className} style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+  </svg>
+);
+const Chevron = ({ className, style, rotate = false }) => (
+  <svg className={className}
+    style={{ transform: rotate ? "rotate(180deg)" : "none", transition: "transform 320ms cubic-bezier(0.22,0.61,0.36,1)", ...style }}
+    viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d="m6 9 6 6 6-6"/>
+  </svg>
+);
+
+/* Konark Sun Temple wheel — same hairline mandala as participant pass.   */
+function KonarkSun({ cx, cy, r, delay = 0, color = "#E85D1F", duration = 110, opacity = 0.18, noFade = false }) {
+  const primarySpokes = Array.from({ length: 8 }, (_, i) => (i * 360) / 8);
+  const secondary    = Array.from({ length: 16 }, (_, i) => 11.25 + (i * 360) / 16);
+  const inner = r * 0.18;
+  const mid   = r * 0.55;
+  const outer = r;
+
+  const spokeLine = (deg, len, isPrimary) => {
+    const rad = (deg * Math.PI) / 180;
+    return (
+      <line key={deg}
+        x1={inner * Math.cos(rad)} y1={inner * Math.sin(rad)}
+        x2={len   * Math.cos(rad)} y2={len   * Math.sin(rad)}
+        stroke={color} strokeWidth={isPrimary ? 1.4 : 0.6}
+        opacity={isPrimary ? 1 : 0.7} />
+    );
+  };
+
+  return (
+    <motion.g
+      initial={{ opacity: noFade ? opacity : 0 }}
+      animate={{ opacity }}
+      transition={{ duration: noFade ? 0 : 2.2, delay, ease: EASE }}
+      aria-hidden="true"
+    >
+      <motion.g
+        animate={{ rotate: 360 }}
+        transition={{ duration, ease: "linear", repeat: Infinity }}
+        style={{ transformOrigin: `${cx}px ${cy}px` }}
+      >
+        <g transform={`translate(${cx} ${cy})`} fill="none" strokeLinecap="round">
+          <circle cx="0" cy="0" r={outer}        stroke={color} strokeWidth="1.0" />
+          <circle cx="0" cy="0" r={outer * 0.94} stroke={color} strokeWidth="0.5" opacity="0.7" />
+          <circle cx="0" cy="0" r={mid} stroke={color} strokeWidth="0.7" />
+          <circle cx="0" cy="0" r={inner}       stroke={color} strokeWidth="0.9" />
+          <circle cx="0" cy="0" r={inner * 0.5} stroke={color} strokeWidth="0.6" fill={color} fillOpacity="0.8" />
+          {primarySpokes.map(d => spokeLine(d, outer, true))}
+          {secondary.map(d => spokeLine(d, mid, false))}
+          {primarySpokes.map(d => {
+            const rad = (d * Math.PI) / 180;
+            return (
+              <circle key={`b${d}`}
+                cx={outer * 0.97 * Math.cos(rad)}
+                cy={outer * 0.97 * Math.sin(rad)}
+                r="1.4" stroke={color} strokeWidth="0.6" fill={color} fillOpacity="0.6" />
+            );
+          })}
+        </g>
+      </motion.g>
+    </motion.g>
+  );
+}
+
+/* Plane icon — paper-airplane silhouette pointing right. */
+const PlaneIcon = ({ size = 22, color = "#E85D1F" }) => (
+  <svg width={size} height={size} viewBox="-12 -10 28 20" aria-hidden="true" focusable="false">
+    <path d="M 14 0 L -10 -8 L -3 0 L -10 8 Z"
+      fill={color} stroke={color} strokeWidth="0.5" strokeLinejoin="round" strokeLinecap="round" />
+  </svg>
+);
+
+/* ============================================================
+   8. SHARED PRIMITIVES
+   ============================================================ */
+const Bindu = ({ className = "" }) => (
+  <span className={`inline-block leading-none ${className}`} style={{ margin: "0 0.35em", color: "#D6D6D6" }}>·</span>
+);
+
+const InfinityMark = ({ className = "", color = "#E85D1F" }) => (
+  <svg viewBox="0 0 48 24" className={className} fill="none" stroke={color} strokeWidth="1" strokeLinecap="round">
+    <path d="M3 12 C 3 5, 13 5, 17 12 C 21 19, 31 19, 35 12 C 39 5, 45 5, 45 12 C 45 19, 39 19, 35 12 C 31 5, 21 5, 17 12 C 13 19, 3 19, 3 12 Z" />
+  </svg>
+);
+
+const Eyebrow = ({ children, color = "#000", className = "" }) => {
+  const safe = color === "#E85D1F" ? "#C44715" : color === "#8A8A8A" ? "#6B6B6B" : color;
+  return (
+    <div className={`uppercase ${className}`} style={{
+      fontSize: 11, letterSpacing: "0.18em", color: safe,
+      fontFamily: "Inter, system-ui, sans-serif", fontWeight: 500,
+    }}>
+      {children}
+    </div>
+  );
+};
+
+/* ============================================================
+   9. COUNTRY LANDMARKS
+   IN — Hawa Mahal facade (Jaipur)
+   DE — Frankfurt Römer (timber-frame town hall)
+   NL — Amsterdam canal houses
+   ============================================================ */
+const Landmark = ({ code, color = "#E85D1F", height = 110 }) => {
+  const sw = 0.9;
+  const common = { fill: "none", stroke: color, strokeWidth: sw, strokeLinecap: "round", strokeLinejoin: "round" };
+
+  if (code === "IN") return (
+    /* Hawa Mahal — Jaipur "Palace of Winds". Five tiers of arched windows
+       in a honeycomb facade. Hairline rendering. */
+    <svg viewBox="0 0 220 200" style={{ height, width: "auto" }} {...common}>
+      {/* base platform */}
+      <path d="M 10 188 L 210 188 L 210 178 L 10 178 Z" />
+      {/* main facade outline — five-tier wedding-cake taper */}
+      <path d="M 22 178 L 22 156 L 198 156 L 198 178" />
+      <path d="M 30 156 L 30 132 L 190 132 L 190 156" />
+      <path d="M 40 132 L 40 108 L 180 108 L 180 132" />
+      <path d="M 52 108 L 52 84 L 168 84 L 168 108" />
+      <path d="M 64 84 L 64 60 L 156 60 L 156 84" />
+      {/* arched windows — 5 across each tier */}
+      {/* tier 5 (bottom) */}
+      <path d="M 32 175 Q 36 165 40 175 M 50 175 Q 54 165 58 175 M 68 175 Q 72 165 76 175 M 86 175 Q 90 165 94 175 M 104 175 Q 108 165 112 175 M 122 175 Q 126 165 130 175 M 140 175 Q 144 165 148 175 M 158 175 Q 162 165 166 175 M 176 175 Q 180 165 184 175" />
+      {/* tier 4 */}
+      <path d="M 42 153 Q 46 143 50 153 M 60 153 Q 64 143 68 153 M 78 153 Q 82 143 86 153 M 96 153 Q 100 143 104 153 M 114 153 Q 118 143 122 153 M 132 153 Q 136 143 140 153 M 150 153 Q 154 143 158 153 M 168 153 Q 172 143 176 153" />
+      {/* tier 3 */}
+      <path d="M 50 129 Q 54 119 58 129 M 68 129 Q 72 119 76 129 M 86 129 Q 90 119 94 129 M 104 129 Q 108 119 112 129 M 122 129 Q 126 119 130 129 M 140 129 Q 144 119 148 129 M 158 129 Q 162 119 166 129" />
+      {/* tier 2 */}
+      <path d="M 60 105 Q 64 95 68 105 M 78 105 Q 82 95 86 105 M 96 105 Q 100 95 104 105 M 114 105 Q 118 95 122 105 M 132 105 Q 136 95 140 105 M 150 105 Q 154 95 158 105" />
+      {/* tier 1 (top) */}
+      <path d="M 72 81 Q 76 71 80 81 M 90 81 Q 94 71 98 81 M 108 81 Q 112 71 116 81 M 126 81 Q 130 71 134 81 M 144 81 Q 148 71 152 81" />
+      {/* central crowning chhatri (umbrella dome) */}
+      <path d="M 100 60 L 100 48 L 120 48 L 120 60" />
+      <path d="M 96 48 Q 110 30 124 48" />
+      <path d="M 110 30 L 110 22" />
+      <circle cx="110" cy="20" r="1.6" fill={color} />
+      {/* small flanking finials */}
+      <path d="M 64 60 L 64 52 L 70 52 L 70 60" />
+      <path d="M 150 60 L 150 52 L 156 52 L 156 60" />
+      {/* horizon */}
+      <path d="M 5 196 L 215 196" strokeWidth={sw * 0.5} opacity="0.4" />
+    </svg>
+  );
+
+  if (code === "DE") return (
+    /* Frankfurt Römer — three timber-frame stepped-gable houses on the
+       Römerberg square. The middle (Zum Römer) has a balcony + belfry. */
+    <svg viewBox="0 0 220 200" style={{ height, width: "auto" }} {...common}>
+      {/* House 1 (left) — stepped gable */}
+      <path d="M 18 188 L 18 105 L 26 105 L 26 92 L 36 92 L 36 78 L 46 78 L 46 60 L 56 60 L 56 78 L 66 78 L 66 92 L 76 92 L 76 105 L 84 105 L 84 188 Z" />
+      <path d="M 30 130 L 42 130 L 42 145 L 30 145 Z M 60 130 L 72 130 L 72 145 L 60 145 Z" />
+      <path d="M 30 155 L 42 155 L 42 170 L 30 170 Z M 60 155 L 72 155 L 72 170 L 60 170 Z" />
+      {/* timber-frame X's */}
+      <path d="M 30 130 L 42 145 M 42 130 L 30 145 M 60 130 L 72 145 M 72 130 L 60 145" strokeWidth={sw * 0.5} opacity="0.6" />
+      {/* House 2 (middle, Zum Römer) — taller stepped gable + central balcony + belfry */}
+      <path d="M 86 188 L 86 95 L 94 95 L 94 82 L 104 82 L 104 65 L 114 65 L 114 45 L 124 45 L 124 65 L 134 65 L 134 82 L 144 82 L 144 95 L 152 95 L 152 188 Z" />
+      <path d="M 119 45 L 119 30" />
+      <circle cx="119" cy="28" r="1.8" fill={color} />
+      {/* central balcony arches */}
+      <path d="M 96 130 Q 102 120 108 130 M 116 130 Q 122 120 128 130 M 136 130 Q 142 120 148 130" />
+      {/* upper windows */}
+      <path d="M 96 105 L 108 105 L 108 120 L 96 120 Z M 116 105 L 128 105 L 128 120 L 116 120 Z M 136 105 L 148 105 L 148 120 L 136 120 Z" />
+      {/* timber-frame X's */}
+      <path d="M 96 150 L 108 165 M 108 150 L 96 165 M 116 150 L 128 165 M 128 150 L 116 165 M 136 150 L 148 165 M 148 150 L 136 165" strokeWidth={sw * 0.5} opacity="0.6" />
+      {/* central arched doorway */}
+      <path d="M 110 188 L 110 175 Q 119 168 128 175 L 128 188" />
+      {/* House 3 (right) — stepped */}
+      <path d="M 154 188 L 154 105 L 162 105 L 162 92 L 172 92 L 172 78 L 182 78 L 182 60 L 192 60 L 192 78 L 202 78 L 202 92 L 212 92 L 212 105 L 220 105 L 220 188 Z" strokeLinejoin="round" />
+      <path d="M 166 130 L 178 130 L 178 145 L 166 145 Z M 196 130 L 208 130 L 208 145 L 196 145 Z" />
+      <path d="M 166 155 L 178 155 L 178 170 L 166 170 Z M 196 155 L 208 155 L 208 170 L 196 170 Z" />
+      <path d="M 166 130 L 178 145 M 178 130 L 166 145 M 196 130 L 208 145 M 208 130 L 196 145" strokeWidth={sw * 0.5} opacity="0.6" />
+      {/* cobblestone square */}
+      <path d="M 5 196 L 220 196" strokeWidth={sw * 0.5} opacity="0.4" />
+    </svg>
+  );
+
+  if (code === "NL") return (
+    <svg viewBox="0 0 200 200" style={{ height, width: "auto" }} {...common}>
+      {/* Amsterdam canal houses — same as participant pass */}
+      <path d="M 20 175 L 20 90 L 30 90 L 30 80 L 40 80 L 40 70 L 50 70 L 50 60 L 60 60 L 60 70 L 70 70 L 70 80 L 80 80 L 80 90 L 90 90 L 90 175 Z" />
+      <path d="M 35 110 L 45 110 L 45 125 L 35 125 Z M 55 110 L 65 110 L 65 125 L 55 125 Z M 75 110 L 85 110 L 85 125 L 75 125 Z" />
+      <path d="M 35 140 L 45 140 L 45 155 L 35 155 Z M 55 140 L 65 140 L 65 155 L 55 155 Z M 75 140 L 85 140 L 85 155 L 75 155 Z" />
+      <path d="M 95 175 L 95 100 Q 95 75 110 75 Q 125 75 125 100 L 125 175 Z" />
+      <path d="M 102 115 L 118 115 L 118 130 L 102 130 Z M 102 145 L 118 145 L 118 160 L 102 160 Z" />
+      <path d="M 130 175 L 130 95 L 140 95 L 140 85 L 150 85 L 150 75 L 160 75 L 160 85 L 170 85 L 170 95 L 180 95 L 180 175 Z" />
+      <path d="M 142 115 L 152 115 L 152 130 L 142 130 Z M 158 115 L 168 115 L 168 130 L 158 130 Z" />
+      <path d="M 142 145 L 152 145 L 152 160 L 142 160 Z M 158 145 L 168 145 L 168 160 L 158 160 Z" />
+      <path d="M 5 188 L 195 188" strokeWidth={sw * 0.6} opacity="0.5" />
+      <path d="M 5 195 L 195 195" strokeWidth={sw * 0.4} opacity="0.3" />
+    </svg>
+  );
+
+  // Default — globe
+  return (
+    <svg viewBox="0 0 100 100" style={{ height: height * 0.7, width: "auto" }} {...common}>
+      <circle cx="50" cy="50" r="42" />
+      <ellipse cx="50" cy="50" rx="42" ry="20" />
+      <ellipse cx="50" cy="50" rx="42" ry="40" />
+      <path d="M 8 50 L 92 50 M 50 8 L 50 92" />
+      <path d="M 22 22 Q 50 35 78 22 M 22 78 Q 50 65 78 78" strokeWidth={sw * 0.5} opacity="0.6" />
+    </svg>
+  );
+};
+
+const LandmarkLabel = {
+  IN: "Hawa Mahal · Jaipur",
+  DE: "Römer · Frankfurt",
+  NL: "Amsterdam",
+  WW: "the world",
+};
+
+/* ============================================================
+   10. ROOT
+   ============================================================ */
+function ArrivalJourney() {
+  const [phase, setPhase] = useState("gate");
+  const [teacher, setTeacher] = useState(null);
+  const reduceMotion = useReducedMotion();
+
+  const handlePick = (t) => {
+    setTeacher(t);
+    setPhase("searching");
+    // brief preparing-your-pass moment, then transit
+    setTimeout(() => setPhase("transit"), reduceMotion ? 600 : 1400);
+  };
+
+  // Phase auto-advance: transit (~7s) → shoonya (~10.5s) → venue (auto in component) → pass
+  useEffect(() => {
+    if (phase === "transit") {
+      const t = setTimeout(() => setPhase("shoonya"), reduceMotion ? 1500 : 7000);
+      return () => clearTimeout(t);
+    }
+    if (phase === "shoonya") {
+      const t = setTimeout(() => setPhase("venue"), reduceMotion ? 2000 : 10500);
+      return () => clearTimeout(t);
+    }
+  }, [phase, reduceMotion]);
+
+  const reset = () => { setTeacher(null); setPhase("gate"); };
+  const skipToPass = () => setPhase("pass");
+  const skipFromTransit = () => setPhase("shoonya");
+  const skipFromShoonya = () => setPhase("venue");
+
+  return (
+    <div className="min-h-screen w-full" style={{ background: "#fff", color: "#4A4A4A" }}>
+      <AnimatePresence mode="wait">
+        {phase === "gate" && (
+          <motion.div key="gate" {...fadeUp(0)}>
+            <GatePhase onPick={handlePick} />
+          </motion.div>
+        )}
+        {phase === "searching" && teacher && (
+          <motion.div key="searching" {...fadeUp(0)}>
+            <SearchingPhase teacher={teacher} />
+          </motion.div>
+        )}
+        {phase === "transit" && teacher && (
+          <motion.div key="transit" {...fadeUp(0)}>
+            <TransitPhase teacher={teacher} onSkip={skipFromTransit} />
+          </motion.div>
+        )}
+        {phase === "shoonya" && teacher && (
+          <motion.div key="shoonya" {...fadeUp(0)}>
+            <ShoonyaPhase onSkip={skipFromShoonya} />
+          </motion.div>
+        )}
+        {phase === "venue" && teacher && (
+          <motion.div key="venue" {...fadeUp(0)}>
+            <VenuePhase onContinue={skipToPass} />
+          </motion.div>
+        )}
+        {phase === "pass" && teacher && (
+          <motion.div key="pass" {...fadeUp(0)}>
+            <FacultyPassPhase teacher={teacher} onReset={reset} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function SkipControl({ onSkip, label = "Skip", color = "#000", delay = 1.2 }) {
+  return (
+    <motion.button
+      onClick={onSkip}
+      initial={{ opacity: 0 }} animate={{ opacity: 0.85 }}
+      transition={{ duration: 0.6, delay, ease: EASE }}
+      className="absolute bottom-6 right-6 sm:bottom-8 sm:right-8 transition-opacity hover:opacity-100 focus-visible:opacity-100"
+      style={{
+        color, background: "none", border: "none", cursor: "pointer",
+        padding: "10px 14px",
+        fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 12,
+        letterSpacing: "0.18em", textTransform: "uppercase",
+        display: "inline-flex", alignItems: "center", gap: 6,
+      }}>
+      {label}
+      <span aria-hidden="true">→</span>
+    </motion.button>
+  );
+}
+
+/* ============================================================
+   11. GATE — 5 named teacher buttons (no email search)
+   ============================================================ */
+function GatePhase({ onPick }) {
+  return (
+    <section className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
+      <div className="w-full max-w-2xl">
+        <motion.div {...fadeUp(0)} className="text-center mb-3">
+          <Eyebrow color="#E85D1F">For our visiting faculty</Eyebrow>
+        </motion.div>
+        <motion.h1 {...fadeUp(0.1)} className="text-center mb-5" style={{
+          fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+          fontSize: "clamp(40px, 8vw, 72px)", lineHeight: 1.05, letterSpacing: "-0.005em", color: "#000",
+        }}>
+          Welcome to the<br />
+          <em style={{ fontStyle: "italic", color: "#E85D1F", fontWeight: 400 }}>festival.</em>
+        </motion.h1>
+
+        <motion.p {...fadeUp(0.22)} className="text-center max-w-md mx-auto mb-10" style={{
+          fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", fontWeight: 400,
+          fontSize: "clamp(16px, 2.4vw, 19px)", lineHeight: 1.4, color: "#000",
+        }}>
+          Tap your name to step into your itinerary.
+        </motion.p>
+
+        <motion.ul {...fadeUp(0.34)}
+          style={{ borderTop: "0.5px solid #D6D6D6", listStyle: "none", padding: 0, margin: 0 }}>
+          {TEACHERS.map((t, i) => (
+            <motion.li key={t.id}
+              initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 + i * 0.07, ease: EASE }}
+            >
+              <button onClick={() => onPick(t)}
+                aria-label={`Step in as ${t.name}, arriving from ${t.originCity}`}
+                className="w-full text-left transition-colors hover:bg-[#FAFAFA]"
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  gap: 16, padding: "18px 4px", minHeight: 60,
+                  borderBottom: "0.5px solid #D6D6D6",
+                  background: "none", border: "none", borderBottomWidth: "0.5px",
+                  borderBottomStyle: "solid", borderBottomColor: "#D6D6D6",
+                  cursor: "pointer", width: "100%",
+                }}>
+                <div>
+                  <div style={{
+                    fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+                    fontSize: 22, lineHeight: 1.15, color: "#000", letterSpacing: "-0.005em",
+                  }}>
+                    {t.name}
+                  </div>
+                  <div className="mt-1" style={{ fontSize: 12, color: "#6B6B6B" }}>
+                    Arriving from {t.originCity}
+                    <Bindu />
+                    Act {t.galaAct} at the Gala
+                  </div>
+                </div>
+                <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: "#C44715" }} />
+              </button>
+            </motion.li>
+          ))}
+        </motion.ul>
+
+        <motion.div {...fadeUp(0.85)} className="mt-12 text-center">
+          <div style={{
+            fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", fontWeight: 400,
+            fontSize: 16, color: "#C44715",
+          }}>
+            1 — 3 May 2026<Bindu /><span style={{ color: "#4A4A4A", fontStyle: "normal" }}>Shoonya, Ghent</span>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   12. SEARCHING — brief "preparing your pass"
+   ============================================================ */
+function SearchingPhase({ teacher }) {
+  return (
+    <section className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
+      <motion.div animate={{ rotate: 360 }} transition={{ duration: 2.4, ease: "linear", repeat: Infinity }} className="mb-6">
+        <SpinIcon className="w-6 h-6" style={{ color: "#E85D1F" }} />
+      </motion.div>
+      <Eyebrow className="mb-3">Preparing your pass</Eyebrow>
+      <div style={{ fontSize: 14, color: "#4A4A4A" }}>
+        Boarding{" "}
+        <em style={{ fontStyle: "italic", color: "#000", fontFamily: "'Playfair Display', Georgia, serif" }}>
+          {teacher.name}
+        </em>{" "}
+        from {teacher.originCity}…
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   13. TRANSIT — origin landmark + plane on arc + Ghent skyline
+   ============================================================ */
+function TransitPhase({ teacher, onSkip }) {
+  const landmarkLabel = LandmarkLabel[teacher.originCode] || teacher.originCountry;
+
+  return (
+    <section className="relative min-h-screen flex flex-col items-center justify-center px-6 py-6 sm:py-8">
+      <motion.div {...fadeUp(0)} className="mb-2">
+        <Eyebrow>In transit</Eyebrow>
+      </motion.div>
+
+      <motion.h2 {...fadeUp(0.12)} className="text-center mb-2 max-w-2xl" style={{
+        fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+        fontSize: "clamp(26px, 4.4vw, 38px)", lineHeight: 1.1, letterSpacing: "-0.005em", color: "#000",
+      }}>
+        {teacher.name}, the festival{" "}
+        <em style={{ fontStyle: "italic", color: "#E85D1F", fontWeight: 400 }}>breathes you in.</em>
+      </motion.h2>
+
+      <motion.p {...fadeUp(0.26)} className="text-center max-w-md mb-3" style={{
+        fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", fontWeight: 400,
+        fontSize: 16, lineHeight: 1.35, color: "#000",
+      }}>
+        Departing {landmarkLabel} — boarding now for Ghent.
+      </motion.p>
+
+      <div className="relative w-full max-w-3xl" style={{ aspectRatio: "16 / 7" }}>
+        <TransitArc teacher={teacher} />
+      </div>
+
+      {onSkip && <SkipControl onSkip={onSkip} label="Skip" color="#6B6B6B" delay={1.2} />}
+    </section>
+  );
+}
+
+function TransitArc({ teacher }) {
+  const W = 800, H = 450;
+  const A = { x: 110, y: 320 };
+  const B = { x: 620, y: 110 };
+  const Cx = (A.x + B.x) / 2, Cy = 30;
+  const pathD = `M ${A.x} ${A.y} Q ${Cx} ${Cy} ${B.x} ${B.y}`;
+  const HZ = 320;
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full">
+      <g opacity="0.35" stroke="#D6D6D6" fill="none" strokeWidth="0.5">
+        <ellipse cx={W/2} cy={H+60} rx={W*0.85} ry={H*0.7} />
+        <ellipse cx={W/2} cy={H+60} rx={W*0.6}  ry={H*0.5} />
+        <ellipse cx={W/2} cy={H+60} rx={W*0.35} ry={H*0.32} />
+      </g>
+
+      <motion.g
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.9, delay: 0.3, ease: EASE }}
+      >
+        <foreignObject x={A.x - 90} y={A.y - 195} width="180" height="200">
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%" }}>
+            <Landmark code={teacher.originCode} height={155} />
+          </div>
+        </foreignObject>
+        <line x1={A.x - 80} y1={HZ} x2={A.x + 80} y2={HZ} stroke="#E85D1F" strokeWidth="0.5" opacity="0.7" />
+      </motion.g>
+
+      <motion.text x={A.x} y={A.y + 38} textAnchor="middle"
+        fontFamily="Inter, sans-serif" fontSize="11" fontWeight="500" fill="#4A4A4A" letterSpacing="2"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7, duration: 0.5 }}>
+        {teacher.originCity.toUpperCase()}
+      </motion.text>
+
+      {/* Ghent skyline at destination */}
+      <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+        transition={{ duration: 1.6, delay: 1.6, ease: EASE }}>
+        <line x1="450" y1={HZ} x2="790" y2={HZ} stroke="#E85D1F" strokeWidth="0.5" opacity="0.7" />
+        {/* Saint Bavo */}
+        <g stroke="#E85D1F" strokeWidth="0.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+          <path d={`M 470 ${HZ} L 470 250 L 475 250 L 475 245 L 510 245 L 510 250 L 515 250 L 515 ${HZ} Z`} />
+          <path d="M 475 245 L 478 245 L 478 240 L 482 240 L 482 245 L 486 245 L 486 240 L 490 240 L 490 245 L 494 245 L 494 240 L 498 240 L 498 245 L 502 245 L 502 240 L 506 240 L 506 245 L 510 245" />
+        </g>
+        {/* Belfort */}
+        <g stroke="#E85D1F" strokeWidth="0.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+          <path d={`M 596 ${HZ} L 596 175 L 601 175 L 601 168 L 639 168 L 639 175 L 644 175 L 644 ${HZ} Z`} />
+          <path d="M 601 168 L 620 138 L 639 168" />
+          <line x1="620" y1="138" x2="620" y2="105" />
+          <path d="M 620 105 L 624 102 L 622 99 L 618 99 L 616 102 L 620 105" />
+          <line x1="601" y1="168" x2="601" y2="161" />
+          <line x1="639" y1="168" x2="639" y2="161" />
+          <circle cx="620" cy="220" r="3.5" />
+        </g>
+        {/* Saint Nicholas */}
+        <g stroke="#E85D1F" strokeWidth="0.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+          <path d={`M 700 ${HZ} L 700 195 L 705 195 L 705 189 L 735 189 L 735 195 L 740 195 L 740 ${HZ} Z`} />
+          <path d="M 705 189 L 720 158 L 735 189" />
+          <line x1="720" y1="158" x2="720" y2="148" />
+          <path d={`M 680 ${HZ} L 680 230 L 700 230`} />
+          <path d="M 680 230 L 690 215 L 700 230" />
+          <path d={`M 760 ${HZ} L 760 230 L 740 230`} />
+          <path d="M 740 230 L 750 215 L 760 230" />
+        </g>
+      </motion.g>
+
+      <motion.g initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.4, ease: EASE }}
+        style={{ transformOrigin: `${A.x}px ${A.y}px` }}>
+        <circle cx={A.x} cy={A.y} r={12} fill="none" stroke="#D6D6D6" strokeWidth="0.5" />
+        <circle cx={A.x} cy={A.y} r={3.5} fill="#000" />
+      </motion.g>
+
+      <motion.path d={pathD} fill="none" stroke="#E85D1F" strokeWidth="1"
+        strokeDasharray="4 6" strokeLinecap="round"
+        initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }}
+        transition={{ duration: 3.2, delay: 0.8, ease: EASE }} />
+
+      <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0, duration: 0.4 }}>
+        <motion.g
+          initial={{ offsetDistance: "0%" }} animate={{ offsetDistance: "100%" }}
+          transition={{ duration: 3.2, delay: 0.8, ease: EASE }}
+          style={{
+            offsetPath: `path('${pathD}')`,
+            offsetRotate: "auto",
+            WebkitOffsetPath: `path('${pathD}')`,
+            WebkitOffsetRotate: "auto",
+          }}
+        >
+          <g transform="scale(1.7)">
+            <circle cx="2" cy="0" r="12" fill="#E85D1F" opacity="0.13" />
+            <path d="M 14 0 L -10 -8 L -3 0 L -10 8 Z"
+              fill="#E85D1F" stroke="#E85D1F" strokeWidth="0.6" strokeLinejoin="round" strokeLinecap="round" />
+            <path d="M 14 0 L -3 0" stroke="#FFFFFF" strokeWidth="0.4" opacity="0.55" />
+          </g>
+        </motion.g>
+      </motion.g>
+
+      <motion.g initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.7, delay: 3.8, ease: EASE }}
+        style={{ transformOrigin: `${B.x}px ${B.y}px` }}>
+        <circle cx={B.x} cy={B.y} r={14} fill="none" stroke="#E85D1F" strokeWidth="0.5" />
+      </motion.g>
+
+      <motion.text x="780" y="220" textAnchor="end"
+        fontFamily="'Playfair Display', Georgia, serif" fontStyle="italic"
+        fontSize="22" fontWeight="500" fill="#E85D1F"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 4.0, duration: 0.6 }}>
+        Ghent
+      </motion.text>
+      <motion.text x="780" y="248" textAnchor="end"
+        fontFamily="'Noto Serif Devanagari', serif" fontWeight="400"
+        fontSize="18" fill="#E85D1F" opacity="0.85"
+        initial={{ opacity: 0 }} animate={{ opacity: 0.85 }} transition={{ delay: 4.4, duration: 0.6 }}>
+        · इंडिया
+      </motion.text>
+    </svg>
+  );
+}
+
+/* ============================================================
+   14. SHOONYA facade (identical to participant pass)
+   ============================================================ */
+function ShoonyaPhase({ onSkip }) {
+  return (
+    <section className="min-h-screen relative flex flex-col items-center justify-center overflow-hidden" style={{ background: "#000" }}>
+      <motion.div className="absolute inset-0"
+        initial={{ opacity: 0, scale: 1 }} animate={{ opacity: 1, scale: 1.05 }}
+        transition={{ duration: 4.5, delay: 0.4, ease: EASE }}
+        style={{
+          backgroundImage: "url('./shoonya-facade.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          filter: "brightness(0.55) saturate(0.85) contrast(1.05)",
+        }} />
+
+      <motion.div
+        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+        initial={{ scale: 0.85, opacity: 1 }}
+        animate={{ scale: 2.6, opacity: 0 }}
+        transition={{ duration: 2.6, ease: EASE }}
+        style={{ zIndex: 5 }}
+        aria-hidden="true"
+      >
+        <svg width="540" height="540" viewBox="-220 -220 440 440"
+          style={{ maxWidth: "78vw", maxHeight: "78vh" }}>
+          <KonarkSun cx={0} cy={0} r={195} delay={0} opacity={0.85} duration={9} noFade />
+        </svg>
+      </motion.div>
+
+      <div className="absolute inset-0" style={{
+        background:
+          "radial-gradient(ellipse 60% 45% at 50% 50%, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.0) 80%)," +
+          "linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.10) 30%, rgba(0,0,0,0.10) 60%, rgba(0,0,0,0.85) 100%)",
+      }} />
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 2.8, ease: EASE }}
+        className="absolute top-12 left-0 right-0 text-center">
+        <Eyebrow color="#E85D1F">Stepping into</Eyebrow>
+      </motion.div>
+      <div className="relative z-10 text-center px-6 max-w-2xl">
+        <motion.h2 initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.2, delay: 3.1, ease: EASE }} style={{
+            fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", fontWeight: 400,
+            fontSize: "clamp(56px, 11vw, 110px)", lineHeight: 0.95, color: "#fff",
+            letterSpacing: "-0.005em", margin: 0,
+          }}>
+          Shoonya<span style={{ color: "#E85D1F", fontStyle: "normal" }}>.</span>
+        </motion.h2>
+        <motion.div
+          initial={{ opacity: 0 }} animate={{ opacity: 0.55 }}
+          transition={{ duration: 1.4, delay: 3.8, ease: EASE }}
+          aria-hidden="true"
+          style={{
+            fontFamily: "'Noto Serif Devanagari', 'Playfair Display', serif",
+            fontWeight: 400,
+            fontSize: "clamp(28px, 5.2vw, 52px)",
+            color: "#E85D1F",
+            letterSpacing: "0.04em",
+            lineHeight: 1.1,
+            marginTop: 8,
+          }}
+        >
+          शून्य
+        </motion.div>
+        <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.2, delay: 4.4, ease: EASE }}
+          className="mt-6 max-w-md mx-auto" style={{
+            fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", fontWeight: 400,
+            fontSize: "clamp(16px, 2vw, 19px)", lineHeight: 1.5, color: "#D6D6D6",
+          }}>
+          The doors are open — the sound of feet, breath and bells already inside.
+        </motion.p>
+      </div>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 4.9, ease: EASE }}
+        className="absolute bottom-24 sm:bottom-10 left-0 right-0 text-center px-24 sm:px-6">
+        <Eyebrow color="rgba(255,255,255,0.55)">Take a moment to find your bearings</Eyebrow>
+      </motion.div>
+
+      {onSkip && <SkipControl onSkip={onSkip} label="Skip" color="rgba(255,255,255,0.7)" delay={1.2} />}
+    </section>
+  );
+}
+
+/* ============================================================
+   15. VENUE CROSS-SECTION
+   ============================================================ */
+const FLOORS = [
+  {
+    key: "F2", label: "2nd floor",
+    rooms: [{ name: "Studio Aakash", weight: "primary" }],
+    desc: "The smaller, quieter studio at the top of the building. Used for the Friday Tech & Tools Lab — fewer dancers, more depth.",
+    sessions: ["Fri · 12:00 — Technique & Tools Lab"],
+    media: null,
+  },
+  {
+    key: "MEZ", label: "Mezzanine",
+    rooms: [{ name: "Changing rooms", weight: "muted" }],
+    desc: "The half-level between floors. Student changing rooms 1 & 2 sit here on Gala day. Toilet on this level too.",
+    sessions: ["Open all three days"],
+    media: null,
+  },
+  {
+    key: "F1", label: "1st floor",
+    rooms: [{ name: "Studio Art Deco · Theatre", weight: "primary" }],
+    desc: "The largest studio. By day it's the main workshop floor; by Saturday evening it transforms into Shoonya Theatre for the Gala Showcase. Stairs backstage lead down to Studio Ananta — your dressing room.",
+    sessions: [
+      "Fri · 17:00 — Bollywood folk fusion",
+      "Fri · 18:30 — Garba choreography",
+      "Sat · 09:00 — Kuthu",
+      "Sat · 11:00 — Mayurbhanj Chhau",
+      "Sat · 20:30 — Gala Showcase (sold out)",
+    ],
+    media: null,
+  },
+  {
+    key: "G", label: "Ground floor",
+    rooms: [
+      { name: "Studio Ananta", weight: "primary" },
+      { name: "Shoonya Bar", weight: "muted" },
+    ],
+    desc: "Studio Ananta is your dedicated dressing room for the Gala — all teachers share this space. It also hosts Saturday afternoon and Sunday workshops, and lights up Friday night for the Opening Party. Bar near the entrance serves soup and sandwiches.",
+    sessions: [
+      "Fri · 21:00 — Opening Party",
+      "Sat · 13:30 — Giddha",
+      "Sat · 15:20 — Abhinaya",
+      "Sun · 09:30 — Indian fusion bellydance",
+      "Sun · 11:00 — Desi-afro grooves",
+      "Sun · 13:30 — Lavani",
+      "Sun · 15:50 — Cheraw",
+    ],
+    media: null,
+  },
+  {
+    key: "BAS", label: "Basement",
+    rooms: [{ name: "Toilets", weight: "muted" }],
+    desc: "Down the stairs from the ground floor.",
+    sessions: [],
+    media: null,
+  },
+];
+
+function VenuePhase({ onContinue }) {
+  const [active, setActive] = useState(null);
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (active !== null) return;
+    const t = setTimeout(() => onContinue(), reduceMotion ? 1500 : 9000);
+    return () => clearTimeout(t);
+  }, [active, reduceMotion, onContinue]);
+
+  return (
+    <section className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
+      <motion.div {...fadeUp(0)} className="mb-3">
+        <Eyebrow>Inside Shoonya</Eyebrow>
+      </motion.div>
+      <motion.h2 {...fadeUp(0.1)} className="text-center mb-2 max-w-2xl" style={{
+        fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+        fontSize: "clamp(28px, 5vw, 44px)", lineHeight: 1.1, letterSpacing: "-0.005em", color: "#000",
+      }}>
+        Find your <em style={{ fontStyle: "italic", color: "#C44715", fontWeight: 400 }}>bearings.</em>
+      </motion.h2>
+      <motion.p {...fadeUp(0.22)} className="text-center max-w-md mb-10" style={{
+        fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", fontWeight: 400,
+        fontSize: 16, lineHeight: 1.4, color: "#000",
+      }}>
+        Five levels, three studios, one bar. Tap any floor to see what happens there.
+      </motion.p>
+
+      <div className="w-full max-w-xl">
+        {FLOORS.map((f, i) => (
+          <FloorRow
+            key={f.key} floor={f} index={i}
+            active={active === f.key}
+            anyActive={active !== null}
+            onTap={() => setActive(active === f.key ? null : f.key)}
+          />
+        ))}
+      </div>
+
+      <motion.button
+        onClick={onContinue}
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 3.6, ease: EASE }}
+        className="mt-10 flex items-center gap-2 px-5 py-3 transition-opacity hover:opacity-80"
+        style={{
+          color: "#fff", background: "#C44715", fontFamily: "Inter, sans-serif", fontWeight: 500,
+          fontSize: 13, letterSpacing: "0.08em", textTransform: "uppercase",
+          border: "none", cursor: "pointer",
+        }}>
+        Continue to your pass <ArrowRight className="w-3.5 h-3.5" />
+      </motion.button>
+    </section>
+  );
+}
+
+function FloorRow({ floor, index, active, anyActive, onTap }) {
+  const reveal = 0.15 + index * 0.42;
+  const isMezzanine = floor.key === "MEZ";
+  const widthPct = isMezzanine ? 70 : 100;
+  const panelId = `floor-panel-${floor.key}`;
+  const dim = anyActive && !active;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.7, delay: reveal, ease: EASE }}
+      style={{ marginBottom: "-0.5px" }}
+    >
+      <button type="button" onClick={onTap} aria-expanded={active} aria-controls={panelId}
+        className="block w-full text-left"
+        style={{
+          background: "none", border: "none", padding: 0, cursor: "pointer",
+          opacity: dim ? 0.55 : 1, transition: "opacity 240ms cubic-bezier(0.22,0.61,0.36,1)",
+        }}>
+        <div className="flex items-stretch justify-between mx-auto"
+          style={{
+            width: widthPct + "%",
+            border: active ? "1.5px solid #C44715" : "0.5px solid #D6D6D6",
+            background: active ? "#FFF6EE" : "#fff",
+            minHeight: floor.key === "G" ? 80 : 64,
+            transition: "border 200ms cubic-bezier(0.22,0.61,0.36,1), background 240ms cubic-bezier(0.22,0.61,0.36,1)",
+          }}>
+          <div className="flex items-center px-4" style={{ width: 130, borderRight: active ? "1.5px solid #C44715" : "0.5px solid #D6D6D6" }}>
+            <div>
+              <div style={{
+                fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+                fontSize: 22, color: active ? "#C44715" : "#000", lineHeight: 1,
+                letterSpacing: "-0.01em",
+              }}>
+                {floor.key === "G" ? "GF" : floor.key === "BAS" ? "B" : floor.key === "MEZ" ? "M" : floor.key}
+              </div>
+              <div className="mt-1.5">
+                <Eyebrow color={active ? "#C44715" : "#8A8A8A"}>{floor.label}</Eyebrow>
+              </div>
+            </div>
+          </div>
+          <div className="flex-1 flex items-center justify-between px-5 gap-3">
+            <div className="flex-1 flex items-center">
+              {floor.rooms.map((r, i) => (
+                <Fragment key={r.name}>
+                  {i > 0 && <div className="mx-4" style={{ width: 1, alignSelf: "stretch", background: "#D6D6D6" }} />}
+                  <div className="flex-1">
+                    <div style={{
+                      fontFamily: "'Playfair Display', Georgia, serif",
+                      fontStyle: r.weight === "muted" ? "italic" : "normal",
+                      fontWeight: 500,
+                      fontSize: r.weight === "muted" ? 16 : 20,
+                      color: r.weight === "muted" ? "#4A4A4A" : "#000",
+                      lineHeight: 1.15,
+                      letterSpacing: "-0.005em",
+                    }}>
+                      {r.name}
+                    </div>
+                  </div>
+                </Fragment>
+              ))}
+            </div>
+            <Chevron className="w-4 h-4 flex-shrink-0" style={{ color: active ? "#C44715" : "#8A8A8A" }} rotate={active} />
+          </div>
+        </div>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {active && (
+          <motion.div id={panelId} role="region"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.4, ease: EASE }}
+            style={{ overflow: "hidden" }}>
+            <div className="mx-auto" style={{
+              width: widthPct + "%",
+              borderLeft: "1.5px solid #C44715",
+              borderRight: "1.5px solid #C44715",
+              borderBottom: "1.5px solid #C44715",
+              background: "#FFFCF8",
+            }}>
+              <div className="p-5">
+                <p style={{
+                  fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic",
+                  fontSize: 15, lineHeight: 1.55, color: "#000", margin: 0,
+                }}>
+                  {floor.desc}
+                </p>
+                {floor.sessions.length > 0 && (
+                  <ul className="mt-4" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                    {floor.sessions.map((s, i) => (
+                      <li key={i} style={{
+                        fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 13,
+                        color: "#4A4A4A", padding: "4px 0",
+                        borderBottom: i < floor.sessions.length - 1 ? "0.5px solid #EEE" : "none",
+                      }}>{s}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+/* ============================================================
+   16. FACULTY PASS — full airline ticket aesthetic
+   ============================================================ */
+function FacultyPassPhase({ teacher, onReset }) {
+  const itinerary = useMemo(() => computeTeacherItinerary(teacher), [teacher]);
+  const stay = STAY[teacher.stay];
+
+  return (
+    <section className="px-4 sm:px-6 py-12 sm:py-16 mx-auto" style={{ maxWidth: 980 }}>
+      <motion.div {...fadeUp(0)} className="mb-8 text-center">
+        <Eyebrow color="#E85D1F">Faculty pass issued</Eyebrow>
+        <h2 className="mt-3 mb-2" style={{
+          fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+          fontSize: "clamp(32px, 5.5vw, 48px)", lineHeight: 1.1, letterSpacing: "-0.005em", color: "#000",
+        }}>
+          Itinerary for <em style={{ fontStyle: "italic", color: "#E85D1F", fontWeight: 400 }}>{teacher.name}</em>
+        </h2>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 28, rotateX: 8 }}
+        animate={{ opacity: 1, y: 0, rotateX: 0 }}
+        transition={{ duration: 1.0, delay: 0.2, ease: EASE }}
+        className="mx-auto"
+        style={{ maxWidth: 880, perspective: "1400px" }}
+      >
+        <div
+          className="relative bg-white flex flex-col md:flex-row"
+          style={{
+            borderRadius: 18,
+            border: "1px solid #E0E0E0",
+            boxShadow: "0 24px 60px -28px rgba(0,0,0,0.35), 0 6px 20px -6px rgba(0,0,0,0.12)",
+            overflow: "hidden",
+          }}
+        >
+          <FacultyRibbon />
+
+          <div className="relative flex-1 p-6 sm:p-8" style={{ minWidth: 0 }}>
+            <div style={{ position: "absolute", inset: "0 0 auto 0", height: 4, background: "#E85D1F" }} />
+
+            {/* Header row */}
+            <div className="flex items-start justify-between mb-7 pt-2">
+              <div className="flex items-center gap-3">
+                <InfinityMark className="w-9 h-5" />
+                <div>
+                  <Eyebrow color="#000">GIDF<Bindu />flight 26</Eyebrow>
+                  <div className="mt-0.5" style={{ fontSize: 11, color: "#6B6B6B", fontFamily: "Inter, sans-serif" }}>
+                    Gent India Dans Festival<Bindu />Shoonya, Ghent
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <Eyebrow color="#8A8A8A">Class</Eyebrow>
+                <div style={{
+                  fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+                  fontSize: 18, color: "#0A0A0A", letterSpacing: "-0.005em", marginTop: 2,
+                }}>
+                  <em style={{ fontStyle: "italic", fontWeight: 400 }}>Faculty</em>
+                </div>
+              </div>
+            </div>
+
+            {/* Passenger */}
+            <div className="mb-7">
+              <Eyebrow color="#8A8A8A">Passenger</Eyebrow>
+              <div className="mt-1.5 flex items-baseline flex-wrap gap-3">
+                <h2 style={{
+                  fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+                  fontSize: "clamp(28px, 5vw, 40px)", lineHeight: 1.0, letterSpacing: "-0.01em", color: "#000",
+                  margin: 0,
+                }}>
+                  {teacher.fullName}
+                </h2>
+                <span style={{
+                  fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase",
+                  fontFamily: "Inter, sans-serif", fontWeight: 500,
+                  color: "#fff", background: "#0A0A0A", padding: "3px 7px",
+                }}>
+                  Guest teacher
+                </span>
+                <span style={{
+                  fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase",
+                  fontFamily: "Inter, sans-serif", fontWeight: 500,
+                  color: "#fff", background: "#C44715", padding: "3px 7px",
+                }}>
+                  On stage · Act {teacher.galaAct}
+                </span>
+              </div>
+            </div>
+
+            {/* From → To */}
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 mb-7">
+              <div>
+                <Eyebrow color="#8A8A8A">From</Eyebrow>
+                <div className="mt-1.5 tabular-nums" style={{
+                  fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+                  fontSize: "clamp(28px, 5vw, 40px)", lineHeight: 1, color: "#000",
+                  letterSpacing: "-0.01em",
+                }}>
+                  {teacher.airportCode}
+                </div>
+                <div className="mt-1" style={{ fontSize: 12, color: "#4A4A4A" }}>
+                  {teacher.originCity} · {teacher.originCountry}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-[#E85D1F]">
+                <div style={{ width: 36, borderTop: "1px dashed #E85D1F" }} />
+                <PlaneIcon size={18} />
+                <div style={{ width: 36, borderTop: "1px dashed #E85D1F" }} />
+              </div>
+
+              <div className="text-right">
+                <Eyebrow color="#8A8A8A">To</Eyebrow>
+                <div className="mt-1.5 tabular-nums" style={{
+                  fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+                  fontSize: "clamp(28px, 5vw, 40px)", lineHeight: 1, color: "#E85D1F",
+                  letterSpacing: "-0.01em",
+                }}>
+                  <em style={{ fontStyle: "italic", fontWeight: 400 }}>GNT</em>
+                </div>
+                <div className="mt-1" style={{ fontSize: 12, color: "#4A4A4A" }}>
+                  Ghent · Belgium
+                </div>
+              </div>
+            </div>
+
+            {/* Date / Gate / Tech / Baggage */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-4 pt-5" style={{ borderTop: "0.5px solid #D6D6D6" }}>
+              <DataBlock label="Dates" value="1 — 3 May" sub="2026" />
+              <DataBlock label="Gate" value="Shoonya" sub="Stapelplein 41" />
+              <DataBlock label="Tech slot" value={teacher.galaSlot} sub="Sat · 10 min on stage" />
+              <DataBlock
+                label="Baggage"
+                value={`Act ${teacher.galaAct}`}
+                sub={`Gala · ${teacher.galaStyle}`}
+                accent
+              />
+            </div>
+
+            {/* TIMELINE */}
+            <div className="mt-10">
+              <div className="flex items-baseline justify-between pb-3 mb-5 flex-wrap gap-3"
+                style={{ borderBottom: "0.5px solid #D6D6D6" }}>
+                <h3 style={{
+                  fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+                  fontSize: "clamp(20px, 3vw, 26px)", lineHeight: 1.15, color: "#000", margin: 0,
+                }}>
+                  Your timeline
+                </h3>
+                <span style={{
+                  fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", fontWeight: 400,
+                  fontSize: 14, color: "#C44715",
+                }}>
+                  teaching, tech & stage — in order
+                </span>
+              </div>
+
+              <Timeline items={itinerary} />
+            </div>
+          </div>
+
+          <FacultyStub teacher={teacher} stay={stay} />
+        </div>
+      </motion.div>
+
+      {/* STAY DETAILS */}
+      <motion.div {...fadeUp(0.6)} className="mt-12 mx-auto" style={{ maxWidth: 880 }}>
+        <StayCard teacher={teacher} stay={stay} />
+      </motion.div>
+
+      {/* FLIGHT CONDITIONS */}
+      <motion.div {...fadeUp(0.75)} className="mt-12 mx-auto" style={{ maxWidth: 880 }}>
+        <FlightConditions />
+      </motion.div>
+
+      {/* HEADS UP */}
+      <motion.div {...fadeUp(0.9)} className="mt-12 mx-auto" style={{ maxWidth: 880 }}>
+        <HeadsUp teacher={teacher} />
+      </motion.div>
+
+      <motion.div {...fadeUp(1.05)} className="mt-12 text-center">
+        <button onClick={onReset}
+          aria-label="Step back to the gate and pick another teacher"
+          style={{
+            fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 12,
+            letterSpacing: "0.18em", textTransform: "uppercase", color: "#000",
+            padding: "12px 16px", minHeight: 44,
+            background: "none", border: "none", cursor: "pointer",
+            display: "inline-flex", alignItems: "center", gap: 6,
+            borderBottom: "0.5px solid #000",
+          }}>
+          <span aria-hidden="true">←</span>
+          Step back to the gate
+        </button>
+        <div className="mt-8">
+          <Eyebrow color="#8A8A8A">Thank you for teaching us.</Eyebrow>
+        </div>
+      </motion.div>
+    </section>
+  );
+}
+
+/* Faculty ribbon — black band with gold "FACULTY · GIDF 26" marquee.
+   Distinct from participant ribbons (orange/blue/pink/green/slate). */
+function FacultyRibbon() {
+  const { color, labelColor, label } = FACULTY_RIBBON;
+  const setA = Array.from({ length: 8 }, (_, i) => i);
+  const setB = Array.from({ length: 8 }, (_, i) => i);
+
+  return (
+    <div
+      aria-hidden
+      style={{
+        position: "absolute",
+        top: 26,
+        right: -68,
+        width: 220,
+        transform: "rotate(45deg)",
+        background: color,
+        color: labelColor,
+        padding: "9px 0",
+        fontFamily: "Inter, sans-serif",
+        fontWeight: 500,
+        fontSize: 11,
+        letterSpacing: "0.32em",
+        textTransform: "uppercase",
+        backgroundImage:
+          "repeating-linear-gradient(45deg, rgba(255,255,255,0.06) 0 1px, transparent 1px 4px), repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 4px)",
+        boxShadow:
+          "0 6px 14px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.08)",
+        zIndex: 5,
+        pointerEvents: "none",
+        userSelect: "none",
+        overflow: "hidden",
+      }}
+    >
+      <motion.div
+        animate={{ x: ["0%", "-50%"] }}
+        transition={{ duration: 22, ease: "linear", repeat: Infinity, repeatType: "loop" }}
+        style={{
+          display: "flex",
+          whiteSpace: "nowrap",
+          width: "max-content",
+          willChange: "transform",
+        }}
+      >
+        {setA.map(i => (
+          <span key={`a${i}`} style={{ paddingInline: "1.6em" }}>{label}</span>
+        ))}
+        {setB.map(i => (
+          <span key={`b${i}`} style={{ paddingInline: "1.6em" }}>{label}</span>
+        ))}
+      </motion.div>
+    </div>
+  );
+}
+
+function DataBlock({ label, value, sub, accent }) {
+  return (
+    <div>
+      <Eyebrow color="#8A8A8A">{label}</Eyebrow>
+      <div className="mt-1" style={{
+        fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+        fontSize: 18, lineHeight: 1.1,
+        color: accent ? "#E85D1F" : "#000", letterSpacing: "-0.005em",
+      }}>
+        {accent ? <em style={{ fontStyle: "italic", fontWeight: 400 }}>{value}</em> : value}
+      </div>
+      <div style={{ fontSize: 11, color: "#6B6B6B", marginTop: 2 }}>{sub}</div>
+    </div>
+  );
+}
+
+/* PASS STUB — perforation, punch holes, drive folder + barcode */
+function FacultyStub({ teacher, stay }) {
+  return (
+    <div className="relative md:w-[230px] flex-shrink-0" style={{ background: "#FAFAFA" }}>
+      <div className="hidden md:block absolute top-0 bottom-0 left-0" style={{ width: 1 }}>
+        <div className="absolute inset-0" style={{
+          backgroundImage: "repeating-linear-gradient(0deg, #C4C4C4 0 6px, transparent 6px 14px)",
+          backgroundSize: "1px 14px",
+        }} />
+      </div>
+      <div className="hidden md:block absolute" style={{
+        top: -10, left: -10, width: 20, height: 20, borderRadius: "50%", background: "#fff",
+        border: "1px solid #E0E0E0",
+      }} />
+      <div className="hidden md:block absolute" style={{
+        bottom: -10, left: -10, width: 20, height: 20, borderRadius: "50%", background: "#fff",
+        border: "1px solid #E0E0E0",
+      }} />
+      <div className="md:hidden absolute top-0 left-0 right-0" style={{ height: 1 }}>
+        <div className="absolute inset-0" style={{
+          backgroundImage: "repeating-linear-gradient(90deg, #C4C4C4 0 6px, transparent 6px 14px)",
+        }} />
+      </div>
+
+      <div className="relative p-6 h-full flex flex-col justify-between" style={{ minHeight: 460 }}>
+        <div>
+          <Eyebrow color="#8A8A8A">Admit</Eyebrow>
+          <div style={{
+            fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+            fontSize: 32, lineHeight: 1, color: "#000", marginTop: 4,
+            letterSpacing: "-0.01em",
+          }}>
+            <em style={{ fontStyle: "italic", fontWeight: 400, color: "#E0B441" }}>Faculty</em>
+          </div>
+
+          <div className="mt-7">
+            <Eyebrow color="#8A8A8A">Passenger</Eyebrow>
+            <div className="mt-1" style={{
+              fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+              fontSize: 16, lineHeight: 1.15, color: "#000",
+            }}>
+              {teacher.fullName}
+            </div>
+            <div style={{ fontSize: 11, color: "#6B6B6B", marginTop: 4 }}>
+              Act {teacher.galaAct}
+            </div>
+          </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <MiniBlock label="From" value={teacher.airportCode} />
+            <MiniBlock label="To" value="GNT" accent />
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <MiniBlock label="Date" value="1—3 May" />
+            <MiniBlock label="Year" value="2026" />
+          </div>
+
+          <div className="mt-6">
+            <Eyebrow color="#8A8A8A">Stay</Eyebrow>
+            <div className="mt-1" style={{
+              fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+              fontSize: 13, lineHeight: 1.3, color: "#000",
+            }}>
+              {teacher.stay === "adagio" ? "Adagio Dampoort" : "Shoonya dorm"}
+            </div>
+            <div style={{ fontSize: 11, color: "#6B6B6B", marginTop: 2, lineHeight: 1.4 }}>
+              {stay.addrLine1}<br/>{stay.addrLine2}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8">
+          <a href={teacher.drive} target="_blank" rel="noopener"
+            style={{
+              display: "block",
+              padding: "10px 12px",
+              border: "0.5px solid #D6D6D6",
+              background: "#fff",
+              textDecoration: "none",
+              marginBottom: 10,
+            }}>
+            <Eyebrow color="#8A8A8A">Track upload</Eyebrow>
+            <div style={{
+              fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+              fontSize: 13, color: "#C44715", marginTop: 3,
+            }}>
+              Open your Drive folder ↗
+            </div>
+          </a>
+          <Barcode />
+          <div className="mt-3 flex items-center justify-between" style={{ fontSize: 10, color: "#6B6B6B" }}>
+            <span style={{ fontFamily: "Inter, sans-serif", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+              GIDF · 26
+            </span>
+            <span style={{ fontFamily: "Inter, sans-serif", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+              Faculty
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MiniBlock({ label, value, accent }) {
+  return (
+    <div>
+      <Eyebrow color="#8A8A8A">{label}</Eyebrow>
+      <div className="mt-0.5 tabular-nums" style={{
+        fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+        fontSize: 16, lineHeight: 1, color: accent ? "#E85D1F" : "#000",
+      }}>
+        {accent ? <em style={{ fontStyle: "italic", fontWeight: 400 }}>{value}</em> : value}
+      </div>
+    </div>
+  );
+}
+
+function Barcode() {
+  const widths = [2, 1, 3, 1, 2, 4, 1, 2, 1, 3, 2, 1, 4, 2, 1, 3, 1, 2, 2, 3, 1, 2, 4, 1, 2, 3, 1, 2];
+  return (
+    <div className="flex items-end gap-[2px]" style={{ height: 38 }}>
+      {widths.map((w, i) => (
+        <div key={i} style={{ width: `${w}px`, height: i % 4 === 0 ? "100%" : "82%", background: "#000" }} />
+      ))}
+    </div>
+  );
+}
+
+/* Vertical timeline, day-aware */
+function Timeline({ items }) {
+  return (
+    <div className="relative pl-1">
+      {items.map((w, i) => {
+        const prev = items[i - 1];
+        const isNewDay = !prev || prev.dayKey !== w.dayKey;
+        const dayLabel = w.dayKey === "Fri" ? "Friday · 1 May" : w.dayKey === "Sat" ? "Saturday · 2 May" : "Sunday · 3 May";
+        return (
+          <Fragment key={w.id + i}>
+            {isNewDay && (
+              <motion.div
+                initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.45 + i * 0.05, ease: EASE }}
+                className="flex items-center gap-3 my-3"
+              >
+                <Eyebrow color="#E85D1F">{dayLabel}</Eyebrow>
+                <div className="flex-1" style={{ height: "0.5px", background: "#D6D6D6" }} />
+              </motion.div>
+            )}
+            <TimelineNode w={w} delay={0.5 + i * 0.07} isLast={i === items.length - 1} isFirstOfDay={isNewDay} />
+          </Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
+function TimelineNode({ w, delay, isLast, isFirstOfDay }) {
+  const [open, setOpen] = useState(false);
+  const isOwn = w.isOwn;
+  const isPersonal = w.isPersonal;
+  const isOP = w.id === "openingParty";
+  const isGala = w.id === "gala";
+  const isTech = w.id === "tech";
+  const isFinale = w.id === "techFinale";
+  const isDinner = w.id === "closingDinner";
+  const accent = isOwn ? "#C44715" : isPersonal ? "#C44715" : "#6B6B6B";
+  const panelId = `tl-panel-${w.id}-${delay.toString().replace(".", "_")}`;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.5, delay, ease: EASE }}
+      className="relative grid"
+      style={{ gridTemplateColumns: "20px 1fr", columnGap: 16, marginBottom: isLast ? 0 : 4 }}
+    >
+      <div className="relative">
+        {!isLast && (
+          <div className="absolute" style={{
+            left: 9, top: 14, bottom: -14, width: "1px",
+            background: isFirstOfDay ? "transparent" : "#D6D6D6",
+            backgroundImage: isFirstOfDay
+              ? "repeating-linear-gradient(180deg, #D6D6D6 0 4px, transparent 4px 8px)"
+              : "none",
+          }} />
+        )}
+        <div className="absolute" style={{
+          top: 4, left: 5, width: 10, height: 10, borderRadius: "50%",
+          background: (isOwn || isPersonal) ? accent : "#fff",
+          border: `1.5px solid ${accent}`,
+        }} />
+      </div>
+
+      <button type="button" onClick={() => setOpen(o => !o)}
+        aria-expanded={open}
+        aria-controls={panelId}
+        className="text-left transition-colors hover:bg-[#FAFAFA] py-1.5"
+        style={{ background: "none", border: "none", cursor: "pointer", padding: 0, paddingBottom: 12, minHeight: 44 }}
+      >
+        <div className="flex items-baseline justify-between gap-3 flex-wrap">
+          <div className="flex items-baseline gap-3 flex-wrap">
+            <span className="tabular-nums" style={{
+              fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+              fontSize: 15, color: accent, letterSpacing: "-0.005em",
+            }}>
+              {w.time.split(" ")[0]}
+            </span>
+            <span style={{
+              fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+              fontSize: "clamp(15px, 2.2vw, 17px)", lineHeight: 1.25, color: "#000",
+              letterSpacing: "-0.005em",
+            }}>
+              {w.title}
+            </span>
+            {isOwn && (
+              <span style={{
+                fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase",
+                fontFamily: "Inter, sans-serif", fontWeight: 500, color: "#fff",
+                background: "#C44715", padding: "2px 5px",
+              }}>You're teaching</span>
+            )}
+            {isTech && (
+              <span style={{
+                fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase",
+                fontFamily: "Inter, sans-serif", fontWeight: 500, color: "#fff",
+                background: "#0A0A0A", padding: "2px 5px",
+              }}>Tech rehearsal</span>
+            )}
+            {isFinale && (
+              <span style={{
+                fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase",
+                fontFamily: "Inter, sans-serif", fontWeight: 500, color: "#fff",
+                background: "#C44715", padding: "2px 5px",
+              }}>All teachers</span>
+            )}
+            {isGala && (
+              <span style={{
+                fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase",
+                fontFamily: "Inter, sans-serif", fontWeight: 500, color: "#C44715",
+                border: "0.5px solid #C44715", padding: "2px 5px",
+              }}>Gala</span>
+            )}
+            {isOP && (
+              <span style={{
+                fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase",
+                fontFamily: "Inter, sans-serif", fontWeight: 500, color: "#E85D1F",
+                border: "0.5px solid #E85D1F", padding: "2px 5px",
+              }}>Event</span>
+            )}
+            {isDinner && (
+              <span style={{
+                fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase",
+                fontFamily: "Inter, sans-serif", fontWeight: 500, color: "#000",
+                background: "#FBC70F", padding: "2px 5px",
+              }}>Closing</span>
+            )}
+          </div>
+          <Chevron className="w-4 h-4" style={{ color: "#6B6B6B" }} rotate={open} />
+        </div>
+        <div className="mt-0.5" style={{ fontSize: 12, color: "#4A4A4A" }}>
+          {w.studio && (
+            <>
+              {w.studio}
+              {w.floor && <><Bindu /><span style={{ color: "#6B6B6B" }}>{w.floor}</span></>}
+            </>
+          )}
+        </div>
+
+        {/* Class monitor — only on "you're teaching" rows. */}
+        {isOwn && (
+          <div className="mt-1.5 inline-flex items-center gap-2"
+            style={{ borderLeft: "1px solid #C44715", paddingLeft: 10 }}>
+            <span style={{
+              fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 10,
+              letterSpacing: "0.18em", textTransform: "uppercase", color: "#C44715",
+            }}>Class monitor</span>
+            <span style={{
+              fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+              fontSize: 13, color: "#000",
+            }}>
+              {w.classMonitor || (
+                <em style={{ fontStyle: "italic", color: "#6B6B6B", fontWeight: 400 }}>
+                  to be claimed
+                </em>
+              )}
+            </span>
+          </div>
+        )}
+
+        {/* Workshop notice (e.g. Tech Lab — bring a packed lunch). */}
+        {w.notice && (
+          <div className="mt-2 flex items-start gap-2"
+            style={{ borderLeft: "1.5px solid #C44715", paddingLeft: 10, paddingTop: 2, paddingBottom: 2 }}>
+            <span style={{
+              fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 10,
+              letterSpacing: "0.18em", textTransform: "uppercase", color: "#C44715",
+              flexShrink: 0, paddingTop: 1,
+            }}>
+              Heads up
+            </span>
+            <span style={{
+              fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", fontWeight: 400,
+              fontSize: 13, lineHeight: 1.4, color: "#000",
+            }}>
+              {w.notice}
+            </span>
+          </div>
+        )}
+
+        <AnimatePresence initial={false}>
+          {open && (
+            <motion.div
+              id={panelId}
+              role="region"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.4, ease: EASE }}
+              style={{ overflow: "hidden" }}
+            >
+              <div className="grid sm:grid-cols-[1fr_auto] gap-5 mt-3 pt-3"
+                style={{ borderTop: "0.5px dashed #E0E0E0" }}>
+                <div>
+                  {w.subtitle && (
+                    <div className="mb-1.5" style={{
+                      fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic",
+                      fontSize: 14, color: "#4A4A4A",
+                    }}>{w.subtitle}</div>
+                  )}
+                  {w.desc && (
+                    <p style={{
+                      fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic",
+                      fontWeight: 400, fontSize: 14, lineHeight: 1.6, color: "#000",
+                      margin: 0, maxWidth: "55ch",
+                    }}>{w.desc}</p>
+                  )}
+                </div>
+                <div className="grid gap-2.5 min-w-[200px]">
+                  <FactRow label="Time"   value={w.time} />
+                  {w.studio && <FactRow label="Studio" value={w.floor ? `${w.studio} · ${w.floor}` : w.studio} />}
+                  {w.level   && <FactRow label="Level"  value={w.level} />}
+                  {w.attire  && <FactRow label="Attire" value={w.attire} />}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </button>
+    </motion.div>
+  );
+}
+
+function FactRow({ label, value }) {
+  return (
+    <div className="flex items-baseline justify-between gap-4" style={{ borderBottom: "0.5px solid #EFEFEF", paddingBottom: 6 }}>
+      <Eyebrow color="#8A8A8A">{label}</Eyebrow>
+      <div style={{
+        fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500, fontSize: 13, color: "#000",
+        textAlign: "right", maxWidth: "22ch",
+      }}>
+        {value}
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   17. STAY CARD — per-teacher accommodation
+   ============================================================ */
+function StayCard({ teacher, stay }) {
+  return (
+    <div style={{ border: "1px solid #E0E0E0", borderRadius: 18 }}>
+      <div className="p-6 sm:p-8">
+        <div className="flex items-baseline justify-between flex-wrap gap-3 pb-4"
+          style={{ borderBottom: "0.5px solid #D6D6D6" }}>
+          <Eyebrow>Your stay</Eyebrow>
+          <span style={{
+            fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", fontWeight: 400,
+            fontSize: 14, color: "#C44715",
+          }}>
+            {teacher.stay === "adagio" ? "10-min walk from Shoonya" : "right at the heart of the festivities"}
+          </span>
+        </div>
+        <div className="grid sm:grid-cols-[1fr_auto] gap-6 mt-5">
+          <div>
+            <h3 style={{
+              fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+              fontSize: 22, lineHeight: 1.15, color: "#000", letterSpacing: "-0.005em", margin: 0,
+            }}>
+              {stay.name}
+            </h3>
+            <div className="mt-2" style={{ fontSize: 14, color: "#4A4A4A", lineHeight: 1.6 }}>
+              {stay.addrLine1}<br/>{stay.addrLine2}
+            </div>
+            <p className="mt-4" style={{
+              fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic",
+              fontSize: 14, lineHeight: 1.6, color: "#000", margin: 0, maxWidth: "55ch",
+            }}>
+              {stay.detail}
+            </p>
+          </div>
+          <div className="self-end" style={{ minWidth: 120 }}>
+            <Eyebrow color="#8A8A8A">Distance</Eyebrow>
+            <div className="mt-1" style={{
+              fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500, fontSize: 16, color: "#000",
+            }}>
+              {teacher.stay === "adagio" ? "10 min" : "0 min"}
+            </div>
+            <div style={{ fontSize: 11, color: "#6B6B6B", marginTop: 2 }}>
+              on foot
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   18. FLIGHT CONDITIONS — teacher-relevant only.
+   Sourced from /Emails/Teachers' email *.docx + Swapnil's instructions
+   on food vouchers, monitors, and music setup.
+   ============================================================ */
+const CONDITIONS = [
+  { code: "ITN", title: "Travel itinerary",
+    body: "Please share your travel itinerary with the Shoonya / ABC team once it's finalised. A team member will be paired with you to coordinate logistics throughout the festival." },
+  { code: "MON", title: "Class monitor",
+    body: "Every workshop has a class monitor — your point person before, during and after class. They handle timing, transitions, mics, group photos, and anything you need on the floor. Their name is on each session in your timeline." },
+  { code: "AUX", title: "Music & sound",
+    body: "Music plays via Bluetooth or a mini-jack cable from your laptop or phone. Need a wireless headset to teach? Ask your class monitor — we'll have one ready." },
+  { code: "EAT", title: "Food & vouchers",
+    body: "All meals are served at Shoonya — wide spread, vegetarian and vegan included. Each teacher gets food and drink vouchers for the bar. Tell us about any dietary needs in advance." },
+  { code: "FIT", title: "Studio etiquette",
+    body: "Studios are shoes-free. Leave outside shoes in the designated area on the ground floor. Changing rooms sit on the mezzanine and second floor — Studio Ananta is your dedicated dressing room on Gala day." },
+  { code: "FIN", title: "Grand Finale tech",
+    body: "All visiting teachers join the Grand Finale rehearsal at 19:50 on Saturday — Act 18 of the tech run. Be on stage at 19:50 sharp, in addition to your own act slot earlier." },
+];
+
+function FlightConditions() {
+  return (
+    <div style={{ border: "1px solid #E0E0E0", borderRadius: 18 }}>
+      <div className="p-6 sm:p-8">
+        <div className="flex items-baseline justify-between flex-wrap gap-3 pb-4"
+          style={{ borderBottom: "0.5px solid #D6D6D6" }}>
+          <Eyebrow>Flight conditions</Eyebrow>
+          <span style={{
+            fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", fontWeight: 400,
+            fontSize: 14, color: "#C44715",
+          }}>
+            faculty information<Bindu />read once before take-off
+          </span>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-x-8 gap-y-5 mt-5">
+          {CONDITIONS.map(c => (
+            <div key={c.code} className="grid grid-cols-[44px_1fr] gap-3">
+              <div className="tabular-nums pt-0.5" style={{
+                fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 10,
+                letterSpacing: "0.18em", color: "#C44715",
+              }}>
+                {c.code}
+              </div>
+              <div>
+                <div style={{
+                  fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+                  fontSize: 16, lineHeight: 1.2, color: "#000",
+                }}>
+                  {c.title}
+                </div>
+                <p className="mt-1" style={{
+                  fontFamily: "Inter, sans-serif", fontWeight: 400,
+                  fontSize: 13, lineHeight: 1.6, color: "#4A4A4A", margin: 0,
+                }}>
+                  {c.body}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 pt-4" style={{ borderTop: "0.5px solid #D6D6D6", textAlign: "right" }}>
+          <span style={{
+            fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", fontWeight: 400,
+            fontSize: 14, color: "#4A4A4A",
+          }}>
+            With warmth, Swapnil & Wim<Bindu />ABC
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   19. HEADS UP — stay reminder + closing dinner + contact
+   ============================================================ */
+function HeadsUp({ teacher }) {
+  return (
+    <div className="px-6 sm:px-8 py-9 sm:py-10" style={{
+      background: "#000", borderTop: "1px solid #E85D1F", borderRadius: 18,
+    }}>
+      <Eyebrow color="#E85D1F">Heads up</Eyebrow>
+      <h3 className="mt-3" style={{
+        maxWidth: "30ch",
+        fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+        fontSize: "clamp(22px, 3.5vw, 30px)", lineHeight: 1.1, color: "#fff",
+        letterSpacing: "-0.005em", margin: 0,
+      }}>
+        A few details that{" "}
+        <em style={{ fontStyle: "italic", color: "#E85D1F", fontWeight: 400 }}>matter on arrival.</em>
+      </h3>
+      <div className="mt-7 grid grid-cols-1 sm:grid-cols-2" style={{ borderTop: "0.5px solid #2A2A2A" }}>
+        {teacher.stay === "dorm" ? (
+          <SeparateRow
+            name="Bring a towel"
+            sub="The Shoonya dorm has a kitchenette and a shower — we provide everything else, but towels you'll want to pack."
+            metaParts={["Stapelplein 41", "Kitchenette + shower", "Meals in-house"]}
+            stat="Reminder" />
+        ) : (
+          <SeparateRow
+            name="Adagio Dampoort check-in"
+            sub="We'll walk you through everything you need for check-in. 10-min walk to the studio."
+            metaParts={["Koopvaardijlaan 29", "9000 Gent", "→ Shoonya 10 min"]}
+            stat="Aparthotel" />
+        )}
+        <SeparateRow
+          name="Closing dinner at Wim & Swapnil's"
+          sub="From ~19:30 on Sunday, after One Last Gupshup. Address shared in person. We always go out high-energy."
+          metaParts={["Sunday", "~19:30 onwards", "after 18:00 close"]}
+          stat="If you can stay" />
+      </div>
+      <div className="mt-8" style={{
+        fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", fontWeight: 400,
+        fontSize: 14, color: "#D6D6D6", lineHeight: 1.5,
+      }}>
+        Anything unclear? Reply to your registration email or write to{" "}
+        <a href="mailto:info@shoonyadance.com" style={{ color: "#E85D1F", textDecoration: "none" }}>
+          info@shoonyadance.com
+        </a>
+        {" "}— we'll sort it before you arrive.
+      </div>
+    </div>
+  );
+}
+
+function SeparateRow({ name, sub, metaParts, stat }) {
+  return (
+    <div className="py-5 sm:py-6 sm:pr-6" style={{ borderBottom: "0.5px solid #2A2A2A" }}>
+      <div style={{
+        fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+        fontSize: 20, lineHeight: 1.15, color: "#fff", letterSpacing: "-0.005em", margin: 0,
+      }}>{name}</div>
+      <div className="mt-1" style={{ fontSize: 13, color: "#D6D6D6" }}>{sub}</div>
+      <div className="mt-2" style={{ fontSize: 12, color: "#9A9A9A", fontVariantNumeric: "tabular-nums" }}>
+        {metaParts.map((part, i) => (
+          <Fragment key={i}>{i > 0 && <Bindu />}{part}</Fragment>
+        ))}
+      </div>
+      <div className="mt-3" style={{
+        fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 11,
+        letterSpacing: "0.18em", textTransform: "uppercase",
+        color: "#E85D1F",
+      }}>
+        {stat}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<ArrivalJourney />);
+</script>
+
+</body>
+</html>
