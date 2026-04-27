@@ -16,7 +16,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Noto+Serif+Devanagari:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 
 <link rel="preload" as="image" href="./shoonya-facade.jpg">
+<!-- Preload Devanagari weight that surfaces fastest (Transit-phase eyebrow + Shoonya हtag). -->
+<link rel="preload" as="font" type="font/woff2" crossorigin
+      href="https://fonts.gstatic.com/s/notoserifdevanagari/v25/x3dRckHVYrCU5BkrlPxAr5fU3rl5lr5y.woff2">
 
+<!--
+  PERFORMANCE NOTE — Tailwind Play CDN + Babel-standalone parse JSX in
+  the browser on every visit (~3 MB Tailwind, ~200ms Babel cost). Per
+  Swapnil's "single deploy, live edit" preference this is intentional;
+  swap to a Vite/esbuild bundle (../participants/ArrivalJourney.jsx is
+  the canonical source) only if shipping to a wider audience.
+-->
 <script src="https://cdn.tailwindcss.com"></script>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -24,28 +34,101 @@
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 <style>
-  html, body { margin: 0; background: #fff; }
+  /* Design tokens — Shoonya v1 palette, exposed once so global tweaks
+     are a single edit. Inline JSX styles still use literals; the JS-side
+     `T` map below mirrors these so the same tokens are reachable in JS. */
+  :root {
+    --saffron:        #E85D1F;  /* bright — hairlines, large display, ribbon, dateband */
+    --saffron-aa:     #C44715;  /* AA-compliant for small text on white (4.55:1 @ 11px) */
+    --ink:            #000;     /* primary text */
+    --ink-soft:       #4A4A4A;  /* secondary text */
+    --mute:           #6B6B6B;  /* tertiary text — AA on white */
+    --mute-soft:      #8A8A8A;  /* eyebrow caps — auto-darkens to --mute via Eyebrow */
+    --rule:           #D6D6D6;  /* hairlines */
+    --rule-soft:      #E0E0E0;  /* lighter hairline / pass border */
+    --paper:          #FFFFFF;  /* foundation */
+    --paper-warm:     #FAFAFA;  /* stub paper, hover */
+    --paper-cream:    #FFFCF8;  /* venue active panel */
+    --ink-deep:       #0A0A0A;  /* faculty ribbon */
+    --gold:           #E0B441;  /* faculty ribbon label */
+    --night:          #000000;  /* heads-up + Shoonya phase */
+    --night-rule:     #2A2A2A;  /* divider on dark */
+    --night-mute:     #9A9A9A;  /* meta on dark — AA on #000 */
+    --night-soft:     #D6D6D6;  /* sub on dark */
+    --warmstone:      #1A0E08;  /* fallback bg under shoonya-facade */
+    --gold-bright:    #FBC70F;  /* closing-dinner pill */
+  }
+  html, body { margin: 0; background: var(--paper); }
   body {
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-    color: #4A4A4A;
+    color: var(--ink-soft);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
   }
-  ::selection { background: #E85D1F; color: #fff; }
-  *:focus-visible { outline: 1px solid #E85D1F; outline-offset: 3px; }
+  ::selection { background: var(--saffron); color: var(--paper); }
+  *:focus-visible { outline: 1px solid var(--saffron); outline-offset: 3px; }
+  /* Visually-hidden persistent h1 — gives screen readers a top-level
+     heading that's stable across phase transitions (gate's visible h1
+     is unmounted when AnimatePresence swaps phases). */
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
   @media (prefers-reduced-motion: reduce) {
     * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+  /* Faculty ribbon — narrow-viewport scaling so the "FACULTY" label
+     stays legible on iPhone SE (360px). */
+  @media (max-width: 480px) {
+    .faculty-ribbon { width: 170px !important; right: -56px !important; top: 22px !important; }
+    .faculty-ribbon span { padding-inline: 1.1em !important; letter-spacing: 0.22em !important; }
   }
 </style>
 </head>
 <body>
 
-<div id="root"></div>
+<noscript>
+  <div style="max-width:560px;margin:64px auto;padding:32px;font-family:Georgia,serif;color:#000;line-height:1.6;border:1px solid #D6D6D6">
+    <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#C44715;margin-bottom:8px">Faculty pass</div>
+    <h1 style="font-family:'Playfair Display',Georgia,serif;font-weight:500;font-size:32px;margin:0 0 12px">GIDF 2026 — your boarding pass needs JavaScript.</h1>
+    <p style="margin:0 0 18px">This pass is built on React. If you're reading this, JavaScript is disabled or blocked. The festival runs <em>1 — 3 May 2026</em> at <strong>Shoonya Dance Centre</strong>, Stapelplein 41, 9000 Gent. Reply to your registration email or write to <a href="mailto:info@shoonyadance.com" style="color:#C44715">info@shoonyadance.com</a> and we'll send you the schedule another way.</p>
+    <p style="margin:0;color:#6B6B6B;font-size:14px">— Swapnil &amp; Wim · ABC</p>
+  </div>
+</noscript>
+
+<main id="root"></main>
 
 <script type="text/babel" data-presets="env,react">
 const { useState, useEffect, useMemo, Fragment } = React;
 const { motion, AnimatePresence, useReducedMotion } = window.Motion;
+
+/* JS-side mirror of the CSS custom properties in <head>.
+   Inline `style={{}}` props can't read CSS vars at runtime cleanly; this
+   keeps the palette single-sourced. To remap a colour, change BOTH the
+   CSS variable and the matching key here. */
+const T = {
+  saffron:    "#E85D1F",
+  saffronAA:  "#C44715",
+  ink:        "#000",
+  inkSoft:    "#4A4A4A",
+  mute:       "#6B6B6B",
+  muteSoft:   "#8A8A8A",
+  rule:       "#D6D6D6",
+  ruleSoft:   "#E0E0E0",
+  paper:      "#FFFFFF",
+  paperWarm:  "#FAFAFA",
+  paperCream: "#FFFCF8",
+  inkDeep:    "#0A0A0A",
+  gold:       "#E0B441",
+  night:      "#000000",
+  nightRule:  "#2A2A2A",
+  nightMute:  "#9A9A9A",
+  nightSoft:  "#D6D6D6",
+  warmstone:  "#1A0E08",
+  goldBright: "#FBC70F",
+};
 
 /* ============================================================
    1. TEACHER REGISTRY — 5 visiting faculty for GIDF 2026
@@ -56,23 +139,23 @@ const TEACHERS = [
   {
     id: "colleena", name: "Colleena", fullName: "Colleena Shakti",
     originCity: "Jaipur", originCountry: "India", originCode: "IN",
-    airportCode: "JAI",
+    airportCode: "JAI", landmark: "hawaMahal",
     stay: "adagio",
     galaAct: 15, galaSlot: "19:20", galaStyle: "Solo",
     drive: "https://drive.google.com/drive/folders/1DQFfdGCWfaJW_V6osGKMnfvw2GR9SGMk?usp=drive_link",
   },
   {
     id: "vaishali", name: "Vaishali", fullName: "Vaishali Sagar",
-    originCity: "Amsterdam", originCountry: "Netherlands", originCode: "NL",
-    airportCode: "AMS",
+    originCity: "Mumbai", originCountry: "India", originCode: "IN",
+    airportCode: "BOM", landmark: "gateway",
     stay: "adagio",
     galaAct: 13, galaSlot: "19:00", galaStyle: "Folk · interactive",
     drive: "https://drive.google.com/drive/folders/1C8vAC_rZ-FtoAlwJGp_sYDi38sWfZgT5?usp=drive_link",
   },
   {
     id: "shampa", name: "Shampa", fullName: "Shampa Gopikrishna",
-    originCity: "Amsterdam", originCountry: "Netherlands", originCode: "NL",
-    airportCode: "AMS",
+    originCity: "Mumbai", originCountry: "India", originCode: "IN",
+    airportCode: "BOM", landmark: "gateway",
     stay: "adagio",
     galaAct: 11, galaSlot: "18:40", galaStyle: "Garba · solo",
     drive: "https://drive.google.com/drive/folders/1_y5cXkDj6q_iqRPBCJETJ72Bp1_5hQxD?usp=drive_link",
@@ -80,7 +163,7 @@ const TEACHERS = [
   {
     id: "desihop", name: "Desihop", fullName: "Desihop",
     originCity: "Frankfurt", originCountry: "Germany", originCode: "DE",
-    airportCode: "FRA",
+    airportCode: "FRA", landmark: "romer",
     stay: "dorm",
     galaAct: 3, galaSlot: "17:20", galaStyle: "Afro · kuthu · hip-hop fusion · duet",
     drive: "https://drive.google.com/drive/folders/1IUJtwczDdWl_xigG9sRtQFGzwV0hi5wZ?usp=drive_link",
@@ -88,7 +171,7 @@ const TEACHERS = [
   {
     id: "manasi", name: "Manasi", fullName: "Manasi Khanna",
     originCity: "Amsterdam", originCountry: "Netherlands", originCode: "NL",
-    airportCode: "AMS",
+    airportCode: "AMS", landmark: "amsterdam",
     stay: "dorm",
     galaAct: 5, galaSlot: "17:40", galaStyle: "Bhangra & Giddha · group of 3",
     drive: "https://drive.google.com/drive/folders/1kiTMBzPa84j6hyXypXeZ2xrv7MICk9Cf?usp=drive_link",
@@ -112,7 +195,7 @@ const W = {
     level: "Experienced dancers",
     classMonitor: "Swapnil", // Swapnil monitors this himself; not in tracker
     desc: "An exploration of Rajasthani dance techniques from various communities, finding their common ground and the self-expression that expands out from this centre. Choreographic tools to empower creative range — true to Rajasthani roots while building in the lived present.",
-    notice: "Eat before class. Bring a packed lunch or fruit — there's a short break in the middle, no full meal stop.",
+    // participant-facing "bring a packed lunch" notice intentionally omitted on the teacher pass
   },
   bollyfolk: {
     id: "bollyfolk", day: "Friday · 1 May", dayKey: "Fri",
@@ -444,16 +527,18 @@ const Eyebrow = ({ children, color = "#000", className = "" }) => {
 };
 
 /* ============================================================
-   9. COUNTRY LANDMARKS
-   IN — Hawa Mahal facade (Jaipur)
-   DE — Frankfurt Römer (timber-frame town hall)
-   NL — Amsterdam canal houses
+   9. CITY LANDMARKS — keyed by `teacher.landmark` so two teachers
+   from the same country can have different silhouettes.
+     hawaMahal — Hawa Mahal · Jaipur (Colleena)
+     gateway   — Gateway of India · Mumbai (Vaishali, Shampa)
+     romer     — Frankfurt Römer · timber-frame town hall (Desihop)
+     amsterdam — Amsterdam canal houses · stepped + bell gables (Manasi)
    ============================================================ */
-const Landmark = ({ code, color = "#E85D1F", height = 110 }) => {
+const Landmark = ({ landmark, color = "#E85D1F", height = 110 }) => {
   const sw = 0.9;
   const common = { fill: "none", stroke: color, strokeWidth: sw, strokeLinecap: "round", strokeLinejoin: "round" };
 
-  if (code === "IN") return (
+  if (landmark === "hawaMahal") return (
     /* Hawa Mahal — Jaipur "Palace of Winds". Five tiers of arched windows
        in a honeycomb facade. Hairline rendering. */
     <svg viewBox="0 0 220 200" style={{ height, width: "auto" }} {...common}>
@@ -489,7 +574,61 @@ const Landmark = ({ code, color = "#E85D1F", height = 110 }) => {
     </svg>
   );
 
-  if (code === "DE") return (
+  if (landmark === "gateway") return (
+    /* Gateway of India — Mumbai. Indo-Saracenic monument facing the
+       Arabian Sea: tall central arch flanked by lower bays, large
+       central dome, four corner chhatris (canopied turrets), broad
+       plinth, and a faint sea-line below. Hairline rendering. */
+    <svg viewBox="0 0 220 200" style={{ height, width: "auto" }} {...common}>
+      {/* Plinth steps */}
+      <path d="M 8 188 L 212 188 L 212 192 L 8 192 Z" />
+      <path d="M 14 180 L 206 180 L 206 188 L 14 188 Z" />
+      {/* Side wings — solid bays flanking the central pavilion */}
+      <path d="M 18 180 L 18 132 L 54 132 L 54 180" />
+      <path d="M 166 180 L 166 132 L 202 132 L 202 180" />
+      {/* Wing windows — two per wing */}
+      <path d="M 26 145 L 32 145 L 32 162 L 26 162 Z M 40 145 L 46 145 L 46 162 L 40 162 Z" />
+      <path d="M 174 145 L 180 145 L 180 162 L 174 162 Z M 188 145 L 194 145 L 194 162 L 188 162 Z" />
+      {/* Wing entablature */}
+      <path d="M 18 132 L 18 124 L 54 124 L 54 132" />
+      <path d="M 166 132 L 166 124 L 202 124 L 202 132" />
+      {/* Corner chhatris — small canopies on the wing roofs */}
+      <ellipse cx="36" cy="118" rx="10" ry="4" />
+      <path d="M 28 118 Q 36 108 44 118" />
+      <line x1="36" y1="106" x2="36" y2="98" />
+      <circle cx="36" cy="96" r="1.5" fill={color} />
+      <ellipse cx="184" cy="118" rx="10" ry="4" />
+      <path d="M 176 118 Q 184 108 192 118" />
+      <line x1="184" y1="106" x2="184" y2="98" />
+      <circle cx="184" cy="96" r="1.5" fill={color} />
+      {/* Central pavilion — taller block holding the great arch */}
+      <path d="M 54 180 L 54 92 L 166 92 L 166 180" />
+      {/* Great arch — Indo-Saracenic horseshoe */}
+      <path d="M 76 180 L 76 138 Q 76 110 110 110 Q 144 110 144 138 L 144 180" />
+      {/* Decorative band above the arch */}
+      <path d="M 60 102 L 160 102" strokeWidth={sw * 0.5} />
+      {/* Pavilion entablature */}
+      <path d="M 54 92 L 54 84 L 166 84 L 166 92" />
+      {/* Central dome — broad onion */}
+      <path d="M 78 84 Q 78 50 110 50 Q 142 50 142 84" />
+      <path d="M 78 84 L 142 84" />
+      {/* Dome neck + finial */}
+      <line x1="110" y1="50" x2="110" y2="38" strokeWidth={sw * 0.7} />
+      <circle cx="110" cy="36" r="2" fill={color} />
+      {/* Side mini-domes flanking the central dome */}
+      <ellipse cx="66" cy="82" rx="9" ry="5" />
+      <line x1="66" y1="77" x2="66" y2="68" strokeWidth={sw * 0.6} />
+      <ellipse cx="154" cy="82" rx="9" ry="5" />
+      <line x1="154" y1="77" x2="154" y2="68" strokeWidth={sw * 0.6} />
+      {/* Inner arch latticework hint */}
+      <path d="M 84 138 Q 84 116 110 116 Q 136 116 136 138" strokeWidth={sw * 0.5} opacity="0.6" />
+      {/* Sea horizon + soft wave */}
+      <path d="M 0 192 L 220 192" strokeWidth={sw * 0.5} opacity="0.5" />
+      <path d="M 0 198 Q 30 196 60 198 T 120 198 T 180 198 T 220 198" strokeWidth={sw * 0.4} opacity="0.35" />
+    </svg>
+  );
+
+  if (landmark === "romer") return (
     /* Frankfurt Römer — three timber-frame stepped-gable houses on the
        Römerberg square. The middle (Zum Römer) has a balcony + belfry. */
     <svg viewBox="0 0 220 200" style={{ height, width: "auto" }} {...common}>
@@ -521,7 +660,7 @@ const Landmark = ({ code, color = "#E85D1F", height = 110 }) => {
     </svg>
   );
 
-  if (code === "NL") return (
+  if (landmark === "amsterdam") return (
     <svg viewBox="0 0 200 200" style={{ height, width: "auto" }} {...common}>
       {/* Amsterdam canal houses — same as participant pass */}
       <path d="M 20 175 L 20 90 L 30 90 L 30 80 L 40 80 L 40 70 L 50 70 L 50 60 L 60 60 L 60 70 L 70 70 L 70 80 L 80 80 L 80 90 L 90 90 L 90 175 Z" />
@@ -550,10 +689,10 @@ const Landmark = ({ code, color = "#E85D1F", height = 110 }) => {
 };
 
 const LandmarkLabel = {
-  IN: "Hawa Mahal · Jaipur",
-  DE: "Römer · Frankfurt",
-  NL: "Amsterdam",
-  WW: "the world",
+  hawaMahal: "Hawa Mahal · Jaipur",
+  gateway:   "Gateway of India · Mumbai",
+  romer:     "Römer · Frankfurt",
+  amsterdam: "Amsterdam canal houses",
 };
 
 /* ============================================================
@@ -678,7 +817,7 @@ function GatePhase({ onPick }) {
               initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.4 + i * 0.07, ease: EASE }}
             >
-              <button onClick={() => onPick(t)}
+              <button type="button" onClick={() => onPick(t)}
                 aria-label={`Step in as ${t.name}, arriving from ${t.originCity}`}
                 className="w-full text-left transition-colors hover:bg-[#FAFAFA]"
                 style={{
@@ -746,7 +885,7 @@ function SearchingPhase({ teacher }) {
    13. TRANSIT — origin landmark + plane on arc + Ghent skyline
    ============================================================ */
 function TransitPhase({ teacher, onSkip }) {
-  const landmarkLabel = LandmarkLabel[teacher.originCode] || teacher.originCountry;
+  const landmarkLabel = LandmarkLabel[teacher.landmark] || teacher.originCountry;
 
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center px-6 py-6 sm:py-8">
@@ -754,13 +893,13 @@ function TransitPhase({ teacher, onSkip }) {
         <Eyebrow>In transit</Eyebrow>
       </motion.div>
 
-      <motion.h2 {...fadeUp(0.12)} className="text-center mb-2 max-w-2xl" style={{
+      <motion.h1 {...fadeUp(0.12)} className="text-center mb-2 max-w-2xl" style={{
         fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
         fontSize: "clamp(26px, 4.4vw, 38px)", lineHeight: 1.1, letterSpacing: "-0.005em", color: "#000",
       }}>
         {teacher.name}, the festival{" "}
         <em style={{ fontStyle: "italic", color: "#E85D1F", fontWeight: 400 }}>breathes you in.</em>
-      </motion.h2>
+      </motion.h1>
 
       <motion.p {...fadeUp(0.26)} className="text-center max-w-md mb-3" style={{
         fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", fontWeight: 400,
@@ -801,7 +940,7 @@ function TransitArc({ teacher }) {
       >
         <foreignObject x={A.x - 90} y={A.y - 195} width="180" height="200">
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%" }}>
-            <Landmark code={teacher.originCode} height={155} />
+            <Landmark landmark={teacher.landmark} height={155} />
           </div>
         </foreignObject>
         <line x1={A.x - 80} y1={HZ} x2={A.x + 80} y2={HZ} stroke="#E85D1F" strokeWidth="0.5" opacity="0.7" />
@@ -903,7 +1042,11 @@ function TransitArc({ teacher }) {
    ============================================================ */
 function ShoonyaPhase({ onSkip }) {
   return (
-    <section className="min-h-screen relative flex flex-col items-center justify-center overflow-hidden" style={{ background: "#000" }}>
+    <section className="min-h-screen relative flex flex-col items-center justify-center overflow-hidden" style={{ background: T.night }}>
+      {/* Warmstone fallback under the facade — if shoonya-facade.jpg
+          fails to load, the Konark wheel still opens onto a warm dark
+          rather than a flat black void. */}
+      <div className="absolute inset-0" style={{ background: T.warmstone }} aria-hidden="true" />
       <motion.div className="absolute inset-0"
         initial={{ opacity: 0, scale: 1 }} animate={{ opacity: 1, scale: 1.05 }}
         transition={{ duration: 4.5, delay: 0.4, ease: EASE }}
@@ -911,6 +1054,7 @@ function ShoonyaPhase({ onSkip }) {
           backgroundImage: "url('./shoonya-facade.jpg')",
           backgroundSize: "cover",
           backgroundPosition: "center",
+          backgroundColor: T.warmstone,
           filter: "brightness(0.55) saturate(0.85) contrast(1.05)",
         }} />
 
@@ -938,14 +1082,14 @@ function ShoonyaPhase({ onSkip }) {
         <Eyebrow color="#E85D1F">Stepping into</Eyebrow>
       </motion.div>
       <div className="relative z-10 text-center px-6 max-w-2xl">
-        <motion.h2 initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }}
+        <motion.h1 initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2, delay: 3.1, ease: EASE }} style={{
             fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", fontWeight: 400,
             fontSize: "clamp(56px, 11vw, 110px)", lineHeight: 0.95, color: "#fff",
             letterSpacing: "-0.005em", margin: 0,
           }}>
           Shoonya<span style={{ color: "#E85D1F", fontStyle: "normal" }}>.</span>
-        </motion.h2>
+        </motion.h1>
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 0.55 }}
           transition={{ duration: 1.4, delay: 3.8, ease: EASE }}
@@ -1054,12 +1198,12 @@ function VenuePhase({ onContinue }) {
       <motion.div {...fadeUp(0)} className="mb-3">
         <Eyebrow>Inside Shoonya</Eyebrow>
       </motion.div>
-      <motion.h2 {...fadeUp(0.1)} className="text-center mb-2 max-w-2xl" style={{
+      <motion.h1 {...fadeUp(0.1)} className="text-center mb-2 max-w-2xl" style={{
         fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
         fontSize: "clamp(28px, 5vw, 44px)", lineHeight: 1.1, letterSpacing: "-0.005em", color: "#000",
       }}>
         Find your <em style={{ fontStyle: "italic", color: "#C44715", fontWeight: 400 }}>bearings.</em>
-      </motion.h2>
+      </motion.h1>
       <motion.p {...fadeUp(0.22)} className="text-center max-w-md mb-10" style={{
         fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", fontWeight: 400,
         fontSize: 16, lineHeight: 1.4, color: "#000",
@@ -1215,12 +1359,12 @@ function FacultyPassPhase({ teacher, onReset }) {
     <section className="px-4 sm:px-6 py-12 sm:py-16 mx-auto" style={{ maxWidth: 980 }}>
       <motion.div {...fadeUp(0)} className="mb-8 text-center">
         <Eyebrow color="#E85D1F">Faculty pass issued</Eyebrow>
-        <h2 className="mt-3 mb-2" style={{
+        <h1 className="mt-3 mb-2" style={{
           fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
           fontSize: "clamp(32px, 5.5vw, 48px)", lineHeight: 1.1, letterSpacing: "-0.005em", color: "#000",
         }}>
           Itinerary for <em style={{ fontStyle: "italic", color: "#E85D1F", fontWeight: 400 }}>{teacher.name}</em>
-        </h2>
+        </h1>
       </motion.div>
 
       <motion.div
@@ -1386,7 +1530,7 @@ function FacultyPassPhase({ teacher, onReset }) {
       </motion.div>
 
       <motion.div {...fadeUp(1.05)} className="mt-12 text-center">
-        <button onClick={onReset}
+        <button type="button" onClick={onReset}
           aria-label="Step back to the gate and pick another teacher"
           style={{
             fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 12,
@@ -1417,6 +1561,7 @@ function FacultyRibbon() {
   return (
     <div
       aria-hidden
+      className="faculty-ribbon"
       style={{
         position: "absolute",
         top: 26,
@@ -1502,7 +1647,11 @@ function FacultyStub({ teacher, stay }) {
         }} />
       </div>
 
-      <div className="relative p-6 h-full flex flex-col justify-between" style={{ minHeight: 460 }}>
+      {/* minHeight only kicks in at md+ where the stub sits side-by-side
+          with the main panel; on mobile the stub flows naturally below
+          the main panel, so a fixed 460px column would force empty
+          padding (especially for Adagio teachers with shorter stay info). */}
+      <div className="relative p-6 h-full flex flex-col justify-between md:min-h-[460px]">
         <div>
           <Eyebrow color="#8A8A8A">Admit</Eyebrow>
           <div style={{
