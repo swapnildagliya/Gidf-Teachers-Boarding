@@ -88,6 +88,49 @@
   @media (prefers-reduced-motion: reduce) {
     * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   }
+
+  /* Tour phase — vertical 9:16 video.
+     Mobile: full-bleed (sharp corners, matches v1 design).
+     Desktop: phone-bezel (max 320px wide, thin dark frame, subtle radius).
+     Intentional v1 break on desktop only — bezel reads as "Reel/Story". */
+  .tour-stage {
+    position: relative;
+    background: #000;
+    overflow: hidden;
+    aspect-ratio: 9 / 16;
+    max-height: 65vh;
+    width: auto;
+    max-width: 100%;
+  }
+  @media (min-width: 640px) {
+    .tour-stage {
+      max-height: 70vh;
+      border: 6px solid #1a1a1a;
+      border-radius: 22px;
+    }
+  }
+  @media (orientation: landscape) and (max-width: 900px) {
+    .tour-stage { max-height: 88vh; }
+  }
+  .tour-hint { animation: tourHintFade 2.5s ease both; }
+  @keyframes tourHintFade {
+    0%   { opacity: 0; }
+    15%  { opacity: 0.95; }
+    80%  { opacity: 0.95; }
+    100% { opacity: 0; }
+  }
+
+  /* Plane along arc — Framer Motion doesn't reliably animate CSS
+     offset-distance. Native @keyframes does. Reduce-motion rule above
+     neutralises this to 0.01ms (plane jumps to destination). */
+  .plane-fly {
+    animation: planeFly 3.2s cubic-bezier(0.22, 1, 0.36, 1) 0.8s both;
+  }
+  @keyframes planeFly {
+    from { offset-distance: 0%;   -webkit-offset-distance: 0%;   }
+    to   { offset-distance: 100%; -webkit-offset-distance: 100%; }
+  }
+
   /* Faculty ribbon — narrow-viewport scaling so the "FACULTY" label
      stays legible on iPhone SE (360px). */
   @media (max-width: 480px) {
@@ -110,7 +153,7 @@
 <main id="root"></main>
 
 <script type="text/babel" data-presets="env,react">
-const { useState, useEffect, useMemo, Fragment } = React;
+const { useState, useEffect, useMemo, useRef, Fragment } = React;
 const { motion, AnimatePresence, useReducedMotion } = window.Motion;
 
 /* JS-side mirror of the CSS custom properties in <head>.
@@ -401,6 +444,8 @@ const STAY = {
     addrLine2: "9000 Gent",
     walk: "10-min walk from Shoonya",
     detail: "We'll help you with all the necessary information for your check-in.",
+    phone: "+32 9 395 20 10",      // displayed format
+    phoneTel: "+3293952010",       // tel: link format
   },
   dorm: {
     name: "Shoonya Dance Centre · studio dorm",
@@ -726,15 +771,17 @@ function ArrivalJourney() {
       return () => clearTimeout(t);
     }
     if (phase === "shoonya") {
-      const t = setTimeout(() => setPhase("venue"), reduceMotion ? 2000 : 10500);
+      const t = setTimeout(() => setPhase("tour"), reduceMotion ? 2000 : 10500);
       return () => clearTimeout(t);
     }
+    // Tour phase does NOT auto-advance — user controls pacing (31s video).
   }, [phase, reduceMotion]);
 
   const reset = () => { setTeacher(null); setPhase("gate"); };
   const skipToPass = () => setPhase("pass");
   const skipFromTransit = () => setPhase("shoonya");
-  const skipFromShoonya = () => setPhase("venue");
+  const skipFromShoonya = () => setPhase("tour");
+  const skipFromTour = () => setPhase("venue");
 
   return (
     <div className="min-h-screen w-full" style={{ background: "#fff", color: "#4A4A4A" }}>
@@ -757,6 +804,11 @@ function ArrivalJourney() {
         {phase === "shoonya" && teacher && (
           <motion.div key="shoonya" {...fadeUp(0)}>
             <ShoonyaPhase onSkip={skipFromShoonya} />
+          </motion.div>
+        )}
+        {phase === "tour" && teacher && (
+          <motion.div key="tour" {...fadeUp(0)}>
+            <TourPhase onContinue={skipFromTour} />
           </motion.div>
         )}
         {phase === "venue" && teacher && (
@@ -904,7 +956,7 @@ function TransitPhase({ teacher, onSkip }) {
 
       <motion.h1 {...fadeUp(0.12)} className="text-center mb-2 max-w-2xl" style={{
         fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
-        fontSize: "clamp(26px, 4.4vw, 38px)", lineHeight: 1.1, letterSpacing: "-0.005em", color: "#000",
+        fontSize: "clamp(30px, 5.4vw, 40px)", lineHeight: 1.1, letterSpacing: "-0.005em", color: "var(--ink)",
       }}>
         {teacher.name}, the festival{" "}
         <em style={{ fontStyle: "italic", color: "#E85D1F", fontWeight: 400 }}>breathes you in.</em>
@@ -912,7 +964,7 @@ function TransitPhase({ teacher, onSkip }) {
 
       <motion.p {...fadeUp(0.26)} className="text-center max-w-md mb-3" style={{
         fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", fontWeight: 400,
-        fontSize: 16, lineHeight: 1.35, color: "#000",
+        fontSize: "clamp(16px, 4vw, 19px)", lineHeight: 1.4, color: "var(--ink)",
       }}>
         Departing {landmarkLabel} — boarding now for Ghent.
       </motion.p>
@@ -920,6 +972,16 @@ function TransitPhase({ teacher, onSkip }) {
       <div className="relative w-full max-w-3xl" style={{ aspectRatio: "16 / 7" }}>
         <TransitArc teacher={teacher} />
       </div>
+
+      {/* Bottom anchor — quiet venue/date line so the footer doesn't feel
+          empty after the arc completes. Fades in last. */}
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+        transition={{ duration: 1.0, delay: 4.6, ease: EASE }}
+        className="absolute bottom-8 left-0 right-0 text-center px-6"
+      >
+        <Eyebrow color="var(--mute)">1 — 3 May 2026 · Shoonya, Ghent</Eyebrow>
+      </motion.div>
 
       {onSkip && <SkipControl onSkip={onSkip} label="Skip" color="#6B6B6B" delay={1.2} />}
     </section>
@@ -1004,10 +1066,12 @@ function TransitArc({ teacher }) {
         initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }}
         transition={{ duration: 3.2, delay: 0.8, ease: EASE }} />
 
+      {/* Fade-in via Framer Motion (works for opacity).
+          Path-following motion via .plane-fly CSS keyframes — Framer Motion
+          doesn't reliably animate the CSS offset-distance property. */}
       <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0, duration: 0.4 }}>
-        <motion.g
-          initial={{ offsetDistance: "0%" }} animate={{ offsetDistance: "100%" }}
-          transition={{ duration: 3.2, delay: 0.8, ease: EASE }}
+        <g
+          className="plane-fly"
           style={{
             offsetPath: `path('${pathD}')`,
             offsetRotate: "auto",
@@ -1021,7 +1085,7 @@ function TransitArc({ teacher }) {
               fill="#E85D1F" stroke="#E85D1F" strokeWidth="0.6" strokeLinejoin="round" strokeLinecap="round" />
             <path d="M 14 0 L -3 0" stroke="#FFFFFF" strokeWidth="0.4" opacity="0.55" />
           </g>
-        </motion.g>
+        </g>
       </motion.g>
 
       <motion.g initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
@@ -1135,6 +1199,157 @@ function ShoonyaPhase({ onSkip }) {
 }
 
 /* ============================================================
+   14b. STEP INSIDE — 30s vertical Shoonya tour
+   ============================================================ */
+/* For visiting faculty too — first look around the building before they
+   explore individual floors. Phone-bezel framing on desktop, full-bleed
+   on mobile. Tap-to-pause; reduce-motion users see the poster image.
+   No auto-advance — teacher clicks Continue when ready. */
+function TourPhase({ onContinue }) {
+  const reduceMotion = useReducedMotion();
+  const videoRef = useRef(null);
+  const [paused, setPaused] = useState(false);
+  const [ended, setEnded] = useState(false);
+  // Hint visible for ~2.5s on mount so users know the stage is interactive.
+  const [hintVisible, setHintVisible] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setHintVisible(false), 2500);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Auto-advance ~1.2s after the video ends so the user isn't stuck if the
+  // Continue button is below the fold on smaller viewports. Cancellable —
+  // if the user pauses or scrolls during the lag they can still hit Continue.
+  useEffect(() => {
+    if (!ended) return;
+    const t = setTimeout(() => onContinue(), 1200);
+    return () => clearTimeout(t);
+  }, [ended, onContinue]);
+
+  // Reduce-motion users see the poster, no autoplay → no onEnded fires.
+  // Give them a 4s look-then-go fallback; SkipControl is also visible.
+  useEffect(() => {
+    if (!reduceMotion) return;
+    const t = setTimeout(() => onContinue(), 4000);
+    return () => clearTimeout(t);
+  }, [reduceMotion, onContinue]);
+
+  const togglePlay = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) { v.play(); setPaused(false); }
+    else { v.pause(); setPaused(true); }
+  };
+
+  return (
+    <section className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 py-10">
+      <motion.div {...fadeUp(0)} className="mb-3">
+        <Eyebrow>30-second tour</Eyebrow>
+      </motion.div>
+      <motion.h2 {...fadeUp(0.1)} className="text-center mb-2 max-w-2xl" style={{
+        fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 500,
+        fontSize: "clamp(28px, 5vw, 44px)", lineHeight: 1.1, letterSpacing: "-0.005em", color: "var(--ink)",
+      }}>
+        Step inside <em style={{ fontStyle: "italic", color: "var(--saffron-aa)", fontWeight: 400 }}>Shoonya.</em>
+      </motion.h2>
+      <motion.p {...fadeUp(0.22)} className="text-center max-w-md mb-8" style={{
+        fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", fontWeight: 400,
+        fontSize: 16, lineHeight: 1.4, color: "var(--ink)",
+      }}>
+        A quick walk around — so the door feels familiar when you arrive.
+      </motion.p>
+
+      <motion.div {...fadeUp(0.34)} className="tour-stage">
+        {reduceMotion ? (
+          <img src="./venue/shoonya-tour.jpg" alt="Inside Shoonya"
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        ) : (
+          <button type="button" onClick={togglePlay}
+            aria-label={paused ? "Play Shoonya tour" : "Pause Shoonya tour"}
+            aria-pressed={!paused}
+            style={{
+              position: "relative", display: "block", width: "100%", height: "100%",
+              padding: 0, border: "none", background: "#000", cursor: "pointer",
+            }}>
+            <video
+              ref={videoRef}
+              src="./venue/shoonya-tour.mp4"
+              poster="./venue/shoonya-tour.jpg"
+              autoPlay muted playsInline preload="metadata"
+              onEnded={() => setEnded(true)}
+              aria-hidden="true"
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            />
+            {paused && (
+              <div style={{
+                position: "absolute", inset: 0, display: "flex",
+                alignItems: "center", justifyContent: "center",
+                background: "rgba(0,0,0,0.55)", color: "#fff",
+                fontFamily: "Inter, sans-serif", fontSize: 11,
+                letterSpacing: "0.18em", textTransform: "uppercase",
+              }}>Tap to play</div>
+            )}
+            {/* Persistent corner pause/play glyph at low opacity. WCAG 2.2.2. */}
+            <div aria-hidden="true" style={{
+              position: "absolute", bottom: 10, right: 10,
+              width: 28, height: 28, borderRadius: "50%",
+              background: "rgba(0,0,0,0.55)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              opacity: paused ? 0.95 : 0.45,
+              transition: "opacity 0.3s ease",
+              pointerEvents: "none",
+            }}>
+              {paused ? (
+                <svg width="10" height="12" viewBox="0 0 10 12" fill="#fff" aria-hidden="true">
+                  <polygon points="0,0 10,6 0,12" />
+                </svg>
+              ) : (
+                <svg width="10" height="12" viewBox="0 0 10 12" fill="#fff" aria-hidden="true">
+                  <rect x="1" y="1" width="3" height="10" />
+                  <rect x="6" y="1" width="3" height="10" />
+                </svg>
+              )}
+            </div>
+            {/* On-mount hint — fades in then out so first viewers know it's tappable. */}
+            {hintVisible && !paused && (
+              <div className="tour-hint" style={{
+                position: "absolute", bottom: 10, left: 10,
+                background: "rgba(0,0,0,0.55)", color: "#fff",
+                fontFamily: "Inter, sans-serif", fontSize: 10,
+                letterSpacing: "0.16em", textTransform: "uppercase",
+                padding: "5px 10px", pointerEvents: "none",
+              }}>Tap to pause</div>
+            )}
+          </button>
+        )}
+      </motion.div>
+
+      <motion.button
+        onClick={onContinue}
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 1.0, ease: EASE }}
+        className="mt-8"
+        style={{
+          fontFamily: "Inter, sans-serif", fontSize: 13, fontWeight: 500,
+          letterSpacing: "0.18em", textTransform: "uppercase",
+          color: "var(--saffron-aa)", background: "transparent",
+          /* 1px (not 0.5px hairline) — primary CTA where reliable render
+             on hi-DPI matters more than the system's delicate hairline. */
+          border: "1px solid var(--saffron-aa)",
+          padding: "14px 26px", cursor: "pointer",
+        }}>
+        {ended ? "Continue →" : "Skip the tour →"}
+      </motion.button>
+
+      {/* Guaranteed bottom-right escape hatch — visible regardless of
+          viewport, matches every other phase. Same handler as the
+          mid-page CTA. */}
+      <SkipControl onSkip={onContinue} label="Skip" color="#6B6B6B" delay={1.2} />
+    </section>
+  );
+}
+
+/* ============================================================
    15. VENUE CROSS-SECTION
    ============================================================ */
 const FLOORS = [
@@ -1143,7 +1358,7 @@ const FLOORS = [
     rooms: [{ name: "Studio Aakash", weight: "primary" }],
     desc: "The smaller, quieter studio at the top of the building. Used for the Friday Tech & Tools Lab — fewer dancers, more depth.",
     sessions: ["Fri · 12:00 — Technique & Tools Lab"],
-    media: null,
+    media: "./venue/aakash.jpg",
   },
   {
     key: "MEZ", label: "Mezzanine",
@@ -1163,7 +1378,7 @@ const FLOORS = [
       "Sat · 11:00 — Mayurbhanj Chhau",
       "Sat · 20:30 — Gala Showcase (sold out)",
     ],
-    media: null,
+    media: "./venue/art-deco.jpg",
   },
   {
     key: "G", label: "Ground floor",
@@ -1181,7 +1396,7 @@ const FLOORS = [
       "Sun · 13:30 — Lavani",
       "Sun · 15:50 — Cheraw",
     ],
-    media: null,
+    media: "./venue/ananta.jpg",
   },
   {
     key: "BAS", label: "Basement",
@@ -1244,6 +1459,80 @@ function VenuePhase({ onContinue }) {
         Continue to your pass <ArrowRight className="w-3.5 h-3.5" />
       </motion.button>
     </section>
+  );
+}
+
+/* Floor media — accepts a string OR an array of paths. Renders <img> by
+   default and <video> for .mp4/.webm/.mov. Videos honour reduce-motion
+   (poster shown instead of autoplay) and tap-to-toggle play/pause. */
+function FloorMedia({ src, alt }) {
+  const items = Array.isArray(src) ? src : [src];
+  return (
+    <div className="grid gap-2" style={{ gridTemplateColumns: "1fr" }}>
+      {items.map((s, i) => (
+        <FloorMediaItem key={i} src={s} alt={items.length > 1 ? `${alt} (${i + 1} of ${items.length})` : alt} />
+      ))}
+    </div>
+  );
+}
+
+function FloorMediaItem({ src, alt }) {
+  const [errored, setErrored] = useState(false);
+  const reduceMotion = useReducedMotion();
+  const videoRef = useRef(null);
+  const [paused, setPaused] = useState(false);
+
+  if (!src || errored) return null;
+
+  const isVideo = /\.(mp4|webm|mov)$/i.test(src);
+  const poster  = isVideo ? src.replace(/\.(mp4|webm|mov)$/i, ".jpg") : null;
+
+  if (isVideo && reduceMotion) {
+    return (
+      <img src={poster} alt={alt}
+        onError={() => setErrored(true)}
+        loading="lazy"
+        style={{ width: "100%", height: "100%", objectFit: "cover", minHeight: 120, maxHeight: 240 }} />
+    );
+  }
+
+  if (isVideo) {
+    const togglePlay = () => {
+      const v = videoRef.current;
+      if (!v) return;
+      if (v.paused) { v.play(); setPaused(false); }
+      else { v.pause(); setPaused(true); }
+    };
+    return (
+      <button type="button" onClick={togglePlay}
+        aria-label={paused ? `Play ${alt} video` : `Pause ${alt} video`}
+        aria-pressed={!paused}
+        style={{
+          position: "relative", display: "block", width: "100%", padding: 0, border: "none",
+          background: "#000", cursor: "pointer", minHeight: 120,
+        }}>
+        <video ref={videoRef} src={src} poster={poster}
+          autoPlay muted loop playsInline preload="metadata" aria-hidden="true"
+          onError={() => setErrored(true)}
+          style={{ width: "100%", height: "100%", objectFit: "cover", minHeight: 120, maxHeight: 240, display: "block" }} />
+        {paused && (
+          <div style={{
+            position: "absolute", inset: 0, display: "flex",
+            alignItems: "center", justifyContent: "center",
+            background: "rgba(0,0,0,0.4)", color: "#fff",
+            fontFamily: "Inter, sans-serif", fontSize: 11,
+            letterSpacing: "0.18em", textTransform: "uppercase",
+          }}>Tap to play</div>
+        )}
+      </button>
+    );
+  }
+
+  return (
+    <img src={src} alt={alt}
+      onError={() => setErrored(true)}
+      loading="lazy"
+      style={{ width: "100%", height: "auto", objectFit: "cover", maxHeight: 280, display: "block" }} />
   );
 }
 
@@ -1348,6 +1637,12 @@ function FloorRow({ floor, index, active, anyActive, onTap }) {
                     ))}
                   </ul>
                 )}
+                {/* Studio photo when present. Renders only if floor.media is set. */}
+                {floor.media && (
+                  <div className="mt-4">
+                    <FloorMedia src={floor.media} alt={floor.rooms[0]?.name || floor.label} />
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
@@ -1384,7 +1679,7 @@ function FacultyPassPhase({ teacher, onReset }) {
         style={{ maxWidth: 880, perspective: "1400px" }}
       >
         <div
-          className="relative bg-white flex flex-col md:flex-row"
+          className="relative bg-white flex flex-col"
           style={{
             borderRadius: 18,
             border: "1px solid #E0E0E0",
@@ -1394,6 +1689,8 @@ function FacultyPassPhase({ teacher, onReset }) {
         >
           <FacultyRibbon />
 
+          {/* Pass body — main panel + perforated stub side-by-side */}
+          <div className="flex flex-col md:flex-row">
           <div className="relative flex-1 p-6 sm:p-8" style={{ minWidth: 0 }}>
             <div style={{ position: "absolute", inset: "0 0 auto 0", height: 4, background: "#E85D1F" }} />
 
@@ -1520,6 +1817,35 @@ function FacultyPassPhase({ teacher, onReset }) {
           </div>
 
           <FacultyStub teacher={teacher} stay={stay} />
+          </div>
+
+          {/* CARD FOOTER — full festival programme link, prominent placement.
+              Sits inside the card so the rounded corners + overflow-hidden
+              clip it cleanly. */}
+          <a href="https://gidf.abcdans.com" target="_blank" rel="noopener noreferrer"
+            className="block text-center"
+            style={{
+              borderTop: "1px solid var(--rule-soft)",
+              background: "var(--paper-warm)",
+              padding: "16px 20px",
+              fontFamily: "Inter, sans-serif",
+              fontSize: 12,
+              fontWeight: 500,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              color: "var(--saffron-aa)",
+              textDecoration: "none",
+            }}>
+            Full festival programme
+            <span style={{ color: "var(--mute)", margin: "0 10px" }} aria-hidden="true">·</span>
+            <span style={{
+              textTransform: "lowercase",
+              letterSpacing: "0.04em",
+              borderBottom: "1px solid var(--saffron-aa)",
+              paddingBottom: 1,
+            }}>gidf.abcdans.com</span>
+            <span aria-hidden="true" style={{ marginLeft: 8 }}>→</span>
+          </a>
         </div>
       </motion.div>
 
@@ -2030,6 +2356,26 @@ function StayCard({ teacher, stay }) {
             <div className="mt-2" style={{ fontSize: 14, color: "#4A4A4A", lineHeight: 1.6 }}>
               {stay.addrLine1}<br/>{stay.addrLine2}
             </div>
+            {/* Click-to-call reception line — only rendered when the stay
+                has a phone (Adagio); the dorm doesn't, and falls back gracefully. */}
+            {stay.phone && (
+              <div className="mt-3" style={{ fontSize: 14, color: "#4A4A4A", lineHeight: 1.6 }}>
+                <span style={{
+                  fontFamily: "Inter, sans-serif", fontSize: 11,
+                  letterSpacing: "0.18em", textTransform: "uppercase",
+                  color: "#8A8A8A", marginRight: 8,
+                }}>Reception</span>
+                <a href={`tel:${stay.phoneTel}`}
+                   style={{
+                     color: "#C44715",
+                     textDecoration: "none",
+                     borderBottom: "0.5px solid #C44715",
+                     fontFamily: "Inter, sans-serif",
+                   }}>
+                  {stay.phone}
+                </a>
+              </div>
+            )}
             <p className="mt-4" style={{
               fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic",
               fontSize: 14, lineHeight: 1.6, color: "#000", margin: 0, maxWidth: "55ch",
